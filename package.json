@@ -1,0 +1,28 @@
+{
+  "name": "emkndn-insy7314-2026-insy7314-poe-wandilesimamane",
+  "version": "1.0.0",
+  "description": "initial repo",
+  "main": "server.js",
+  "scripts": {
+  "start": "node hustlehub-backend/server.js",
+  "dev": "nodemon hustlehub-backend/server.js"
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EMKNDN/emkndn-insy7314-2026-insy7314-poe-wandilesimamane.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/EMKNDN/emkndn-insy7314-2026-insy7314-poe-wandilesimamane/issues"
+  },
+  "homepage": "https://github.com/EMKNDN/emkndn-insy7314-2026-insy7314-poe-wandilesimamane#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
