@@ -1,53 +1,77 @@
+// controllers/authController.js
 const users = require('../models/userModel');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // POST /register
-exports.registerUser = (req, res) => {
-    const { name, email, password } = req.body;
+exports.registerUser = async (req, res) => {
+    const { name, email, password, role } = req.body;
 
-    // Edge Case: Check for missing fields
     if (!name || !email || !password) {
         return res.status(400).json({ message: 'Please provide all required fields (name, email, password).' });
     }
 
-    // Edge Case: Check for duplicate user registration
+    // users is now correctly recognized as an array
     const existingUser = users.find(user => user.email === email);
     if (existingUser) {
         return res.status(400).json({ message: 'User with this email already exists.' });
     }
 
-    // Create user object and save to in-memory array
-    const newUser = {
-        id: users.length + 1,
-        name,
-        email,
-        password // Note: Hashing will be attached by Security Specialist
-    };
+    try {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    users.push(newUser);
+        const newUser = {
+            id: users.length + 1,
+            name,
+            email,
+            password: hashedPassword,
+            role: role || 'Client' 
+        };
 
-    res.status(201).json({
-        message: 'User registered successfully.',
-        user: { id: newUser.id, name: newUser.name, email: newUser.email }
-    });
+        users.push(newUser); // Push to the in-memory array
+
+        res.status(201).json({
+            message: 'User registered successfully.',
+            user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error during password hashing.' });
+    }
 };
 
 // POST /login
-exports.loginUser = (req, res) => {
+exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
 
-    // Edge Case: Check for missing fields
     if (!email || !password) {
         return res.status(400).json({ message: 'Please provide email and password.' });
     }
 
-    // Find user and verify password
-    const user = users.find(u => u.email === email);
-    if (!user || user.password !== password) {
-        return res.status(401).json({ message: 'Invalid email or password.' });
-    }
+    try {
+        const user = users.find(u => u.email === email);
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid email or password.' });
+        }
 
-    res.status(200).json({
-        message: 'Login successful.',
-        user: { id: user.id, name: user.name, email: user.email }
-    });
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid email or password.' });
+        }
+
+        const payload = {
+            id: user.id,
+            role: user.role
+        };
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({
+            message: 'Login successful.',
+            token: token,
+            user: { id: user.id, name: user.name, email: user.email, role: user.role }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error during token generation.' });
+    }
 };

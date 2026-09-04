@@ -1,4 +1,9 @@
 const express = require('express');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+require('dotenv').config(); 
+
 const authRoutes = require('./routes/authRoutes');
 
 const app = express();
@@ -10,6 +15,14 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+
+// Read the locally generated SSL certificate and key
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'server.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'server.cert'))
+};
+
+// Spin up the HTTPS server instead of standard HTTP
+https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`Secure Hustlehub+ server running on https://localhost:${PORT}`);
 });
