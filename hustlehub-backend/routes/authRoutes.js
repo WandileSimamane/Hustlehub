@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { registerUser, loginUser } = require('../controllers/authController');
 const { verifyToken } = require('../middleware/authMiddleware');
+const { validateAuth } = require('../middleware/validationMiddleware');
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+router.post('/register', validateAuth, registerUser);
+router.post('/login', validateAuth, loginUser);
 
 // Example protected route demonstrating the middleware in action
 router.get('/protected-test', verifyToken, (req, res) => {

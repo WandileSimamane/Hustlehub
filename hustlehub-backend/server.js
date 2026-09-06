@@ -5,6 +5,7 @@ const path = require('path');
 require('dotenv').config(); 
 
 const authRoutes = require('./routes/authRoutes');
+const errorHandler = require('./middleware/errorMiddleware');
 
 const app = express();
 
@@ -13,6 +14,9 @@ app.use(express.json());
 
 // Auth Routes
 app.use('/api/auth', authRoutes);
+
+// Global Error Handler must be registered AFTER all routes
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
