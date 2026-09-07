@@ -1,3 +1,4 @@
+//catches errors and shows status codes
 const errorHandler = (err, req, res, next) => {
     console.error(err.stack); // Log raw stack trace on server terminal only
 
