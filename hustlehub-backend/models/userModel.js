@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 // In-memory array to hold registered users
 const users = [];
 
@@ -26,7 +26,7 @@ class UserModel {
 }
 
 module.exports = UserModel;
-=======
+
 const users = [];
 
 exports.findUserByEmail = (email) => {
@@ -43,4 +43,4 @@ exports.createUser = (userData) => {
 };
 
 module.exports = users;
->>>>>>> 83ce2fede567860932e7fda074c55638cbc20c93
+

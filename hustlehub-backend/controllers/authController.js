@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 const UserModel = require('../models/userModel');
 
 // POST /api/auth/register
@@ -68,7 +68,7 @@ exports.login = (req, res) => {
       email: user.email,
     },
   });
-=======
+
 // controllers/authController.js
 const users = require('../models/userModel');
 const bcrypt = require('bcrypt');
@@ -145,5 +145,12 @@ exports.loginUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Internal server error during token generation.' });
     }
->>>>>>> 83ce2fede567860932e7fda074c55638cbc20c93
-};
+}}
+
+/*Disclosure of AI Usage in the Assessment: 
+- Section which generative AI was used: POE Part 1
+- Name of AI tool used: Gemini AI 
+- Purpose/Intention behind use: I used Gemini AI as a support tool to help fix coding errors, assist with building the API. 
+- Date in which generative AI was used: 1 September 2025 
+- Link to the generative AI: https://gemini.google.com/app/27518195c9725d45
+*/
