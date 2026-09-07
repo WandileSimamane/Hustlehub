@@ -1,6 +1,6 @@
 # Hustlehub+ Backend - Local Security Setup
 
-# INSY7314 — Part 1
+# INSY7314 - Part 1
 
 **Team Members**
 - Sphosethu Ximba – ST10448336
@@ -118,11 +118,13 @@ npm install
 
 To run the secure authentication flow locally, you must configure your own environment variables and generate a local SSL certificate. 
 
+Open Gitbash terminal to run and ensure the files under the hustlehub-backend folder:
+
 ```bash
 openssl req -nodes -new -x509 -keyout server.key -out server.cert -days 365 -subj "/CN=localhost"
 ```
 
-Create a `.env` file:
+Create a `.env` file under the hustlehub-backend folder :
 
 ```
 PORT=5000
