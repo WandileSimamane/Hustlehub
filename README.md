@@ -22,7 +22,7 @@ Node.js and Express make up the stack. MongoDB will be added as we progress to o
 Client -> HTTPS/TLS -> Express JSON parser -> Route -> verifyToken(if protected) -> Controller -> In memory store -> Response
 ```
 
-This is a standard Express configuration. VerifyToken is the only middleware that does actual security work as it verifies the JWT on protected routes before allowing the request to reach the controller.
+This is a standard Express configuration. The verifyToken middleware checks the JWT before protected routes can be accessed
 This is the drawing of the broader MERN architecture:  
 
 ![MERN architecture diagram](hustlehub-backend/assets/architecture.png) 
@@ -38,7 +38,8 @@ This is the drawing of the broader MERN architecture:
 
 Registration (`POST /api/auth/register`) hashes the password with `bcrypt.hash()` using 10 salt rounds before it's ever stored.
 
-Why use bcrypt instead of merely SHA-256? Because bcrypt has a built in salt, two users with the same password will receive different hashes, preventing rainbow table attacks. Additionally, brute-forcing a stolen hash is far more expensive than using a quick hash like SHA-256 because it is intentionally slower (the "cost factor" determines how slow).
+#### Why use bcrypt instead of merely SHA-256? 
+We use bcrypt to hash passwords before storing them. We did not use SHA-256 because it is designed to be a fast general-purpose hashing algorithm, which is not ideal for storing passwords. bcrypt is slower and uses a salt, meaning that even if two users have the same password, their stored hashes will be different. This makes password cracking more difficult if the password data is ever exposed.
 
 Login (`POST /api/auth/login`) compares passwords using `bcrypt.compare()` rather than manually comparing hashes, since it's built to avoid leaking timing information.
 
