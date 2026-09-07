@@ -152,5 +152,5 @@ exports.loginUser = async (req, res) => {
 - Name of AI tool used: Gemini AI 
 - Purpose/Intention behind use: I used Gemini AI as a support tool to help fix coding errors, assist with building the API. 
 - Date in which generative AI was used: 1 September 2025 
-- Link to the generative AI: https://gemini.google.com/app/27518195c9725d45
+- Link to the generative AI: https://share.gemini.google/3E6IZnpAoC31
 */
