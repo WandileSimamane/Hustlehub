@@ -97,6 +97,15 @@ hustlehub-backend/
 | `POST` | `/api/auth/login` | Public | Verifies credentials, returns JWT | `200`, `400`, `401`, `500` |
 | `GET` | `/api/auth/protected-test` | Protected | Sanity check for JWT middleware | `200`, `401`, `403` |
 
+## Setup
+
+**Prerequisites:** Node 18+, npm 9+, OpenSSL.
+
+```bash
+git clone https://github.com/EMKNDN/emkndn-insy7314-2026-insy7314-poe-wandilesimamane.git
+cd emkndn-insy7314-2026-insy7314-poe-wandilesimamane
+npm install
+```
 
 To run the secure authentication flow locally, you must configure your own environment variables and generate a local SSL certificate. 
 
