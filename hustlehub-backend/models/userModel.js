@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // In-memory array to hold registered users
 const users = [];
 
@@ -25,3 +26,21 @@ class UserModel {
 }
 
 module.exports = UserModel;
+=======
+const users = [];
+
+exports.findUserByEmail = (email) => {
+    return users.find(user => user.email === email);
+};
+
+exports.createUser = (userData) => {
+    const newUser = {
+        id: Date.now().toString(), // Simple unique ID generator
+        ...userData
+    };
+    users.push(newUser);
+    return newUser;
+};
+
+module.exports = users;
+>>>>>>> 83ce2fede567860932e7fda074c55638cbc20c93
