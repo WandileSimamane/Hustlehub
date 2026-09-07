@@ -8,6 +8,19 @@ Users can be divided into three categories: Hustlers, who provide services, Clie
 
 Node.js and Express make up the stack. MongoDB will be added as we progress to other parts. To be able to develop and test the auth flow without first setting up a database, user data is currently kept within an in-memory array. Swapping in MongoDB later shouldn't involve modifying the routes or middleware because the data access is segregated into its own file.
 
+## How a Request Flows Through the App
+
+```
+Client -> HTTPS/TLS -> Express JSON parser -> Route -> verifyToken(if protected) -> Controller -> In memory store -> Response
+```
+
+This is a standard Express configuration. VerifyToken is the only middleware that does actual security work as it verifies the JWT on protected routes before allowing the request to reach the controller.
+This is the drawing of the broader MERN architecture:  
+![MERN architecture diagram](assets/architecture.png) 
+
+(Client Tier-> HTTPS/TLS network Tier-> Express controller layer -> abstracted data layer, currently in-memory, MongoDB later.)
+
+
 To run the secure authentication flow locally, you must configure your own environment variables and generate a local SSL certificate. 
 
 **1. Install Dependencies**
