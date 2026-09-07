@@ -1,5 +1,7 @@
 # Hustlehub+ Backend - Local Security Setup
 
+This is the backend for HustleHub+, a secure freelance marketplace platform  that connects clients with freelancers (also known as Hustlers) allowing them to advertise their services and clients to browse and book the services. In this part we establish security foundations such as HTTPS, password hashing, JWT and register/login before building any marketplace features just yet.
+
 To run the secure authentication flow locally, you must configure your own environment variables and generate a local SSL certificate. 
 
 **1. Install Dependencies**
