@@ -1,5 +1,13 @@
 # Hustlehub+ Backend - Local Security Setup
 
+## INSY7314 
+Part 1 
+Sphosethu Ximba – ST10448336
+Andiswa Mavundla – ST10440448
+Wandile Simamane – ST10445696
+Mbali Ndlovu – ST10445933
+
+
 This is the backend for HustleHub+, a secure freelance marketplace platform  that connects clients with freelancers (also known as Hustlers) allowing them to advertise their services and clients to browse and book the services. In this part we establish security foundations such as HTTPS, password hashing, JWT and register/login before building any marketplace features just yet.
 
 ## Overview
