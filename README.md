@@ -89,6 +89,14 @@ hustlehub-backend/
 └── server.js
 ```
 
+## API Endpoints
+
+| Method | Endpoint | Access | Description | Status Codes |
+|---|---|---|---|---|
+| `POST` | `/api/auth/register` | Public | Registers a user, hashes password | `201`, `400`, `500` |
+| `POST` | `/api/auth/login` | Public | Verifies credentials, returns JWT | `200`, `400`, `401`, `500` |
+| `GET` | `/api/auth/protected-test` | Protected | Sanity check for JWT middleware | `200`, `401`, `403` |
+
 
 To run the secure authentication flow locally, you must configure your own environment variables and generate a local SSL certificate. 
 
