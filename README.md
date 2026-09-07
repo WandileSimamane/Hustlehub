@@ -137,5 +137,5 @@ The server will boot securely at `https://localhost:5000`.
 **Important:** Make sure "SSL certificate verification" is toggled OFF in your Postman settings (under General) before testing the endpoints, otherwise Postman will block the self-signed certificate.
 
 ## Testing
-Endpoints were tested using Postman rather than writing automated tests for this part. The collection (Hustlehub.postman_collection.json) is included in the repo, and screenshots of each test run are attached in assets/ST10445696 Wandile Simamane INSY7314- Part 1.docx.
+Endpoints were tested using Postman rather than writing automated tests for this part. The collection (Hustlehub.postman_collection.json) is included in the repo, and screenshots of each test run are attached in hustlehub-backend/assets/ST10445696 Wandile Simamane INSY7314- Part 1.docx.
 
