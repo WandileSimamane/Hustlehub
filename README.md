@@ -49,7 +49,7 @@ On successful login, the server signs a JWT with `jwt.sign()` using HMAC-SHA256 
 
 This is enough information to identify the individual and their role. There is no name, email address, or password hash. Tokens expire after 1 hour, so if one gets intercepted, the window an attacker has to use it is limited.
 
-`verifyToken` middleware checks for `Authorization: Bearer <token>`. No header → `401`. Bad or expired signature → `403`.
+`verifyToken` middleware checks for `Authorization: Bearer <token>`. No header -> `401`. Bad or expired signature → `403`.
 
 ### 3. Input Validation & Error Handling
 
@@ -64,6 +64,30 @@ This validation is still basic as it checks presence, not much else (no email fo
 The server runs over HTTPS using a locally generated self-signed certificate (`server.key` / `server.cert`), created with OpenSSL.
 
 This encrypts everything in transit such as  headers, the JWT and request bodies This is done so it can't be read or tampered with by something sitting on the same network. But it's important to say clearly: **a self-signed cert only works for local development.** Browsers and API clients don't trust it by default for example, Postman needs SSL verification turned off to even talk to it.
+
+## Project Structure
+
+```
+hustlehub-backend/
+├── assets/
+│   └── architecture.png
+├── certs/                      # gitignored
+│   ├── server.cert
+│   └── server.key
+├── controllers/
+│   └── authController.js
+├── middleware/
+│   └── authMiddleware.js
+├── models/
+│   └── userModel.js             # in-memory store for now
+├── routes/
+│   └── authRoutes.js
+├── .env                         # gitignored
+├── .gitignore
+├── package.json
+├── README.md
+└── server.js
+```
 
 
 To run the secure authentication flow locally, you must configure your own environment variables and generate a local SSL certificate. 
