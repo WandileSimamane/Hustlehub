@@ -71,6 +71,7 @@ This encrypts everything in transit such as  headers, the JWT and request bodies
 hustlehub-backend/
 ├── assets/
 │   └── architecture.png
+|   └──ST10445696 Wandile Simamane INSY7314- Part 1.docx
 ├── certs/                      # gitignored
 │   ├── server.cert
 │   └── server.key
