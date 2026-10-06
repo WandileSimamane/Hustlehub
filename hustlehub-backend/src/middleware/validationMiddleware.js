@@ -1,33 +1,22 @@
 // middleware/validationMiddleware.js
-const validateAuth = (req, res, next) => {
-    const { email, password } = req.body;
+const { body, validationResult } = require('express-validator');
 
-    // Check for missing or empty fields
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            message: "Validation error: Email and password are required."
-        });
+exports.registerRules = [
+    body('name').notEmpty().withMessage('Name is required').trim().escape(),
+    body('email').isEmail().withMessage('Please provide a valid email address').normalizeEmail(),
+    body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long'),
+    body('role').optional().isIn(['Client', 'Freelancer', 'Admin']).withMessage('Invalid role selection')
+];
+
+exports.loginRules = [
+    body('email').isEmail().withMessage('Please provide a valid email address').normalizeEmail(),
+    body('password').notEmpty().withMessage('Password is required')
+];
+
+exports.validate = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
     }
-
-    // Basic email format check
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({
-            success: false,
-            message: "Validation error: Invalid email format."
-        });
-    }
-
-    // Password length check
-    if (password.length < 6) {
-        return res.status(400).json({
-            success: false,
-            message: "Validation error: Password must be at least 6 characters long."
-        });
-    }
-
     next();
 };
-
-module.exports = { validateAuth };

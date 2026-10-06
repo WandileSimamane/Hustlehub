@@ -1,15 +1,14 @@
+// routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
 
 const { registerUser, loginUser } = require('../controllers/authController');
 const { verifyToken } = require('../middleware/authMiddleware');
-const { validateAuth } = require('../middleware/validationMiddleware');
+const { registerRules, loginRules, validate } = require('../middleware/validationMiddleware');
 
-// Define register and login POST endpoints with validation middleware
-router.post('/register', validateAuth, registerUser);
-router.post('/login', validateAuth, loginUser);
+router.post('/register', registerRules, validate, registerUser);
+router.post('/login', loginRules, validate, loginUser);
 
-// Protected route demonstrating the middleware in action
 router.get('/protected-test', verifyToken, (req, res) => {
     res.status(200).json({
         message: 'You have successfully accessed a protected route.',
