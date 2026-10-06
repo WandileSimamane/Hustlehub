@@ -1,7 +1,7 @@
 // services/authService.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
+const User = require('../src/models/userModel');
 
 exports.registerUser = async (userData) => {
     const { name, email, password, role } = userData;
