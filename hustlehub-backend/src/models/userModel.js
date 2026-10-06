@@ -1,18 +1,28 @@
+// models/userModel.js
+const mongoose = require('mongoose');
 
-const users = [];
+const userSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'Name is required'],
+        trim: true
+    },
+    email: {
+        type: String,
+        required: [true, 'Email is required'],
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: [true, 'Password is required']
+    },
+    role: {
+        type: String,
+        enum: ['Client', 'Freelancer', 'Admin'],
+        default: 'Client'
+    }
+}, { timestamps: true });
 
-exports.findUserByEmail = (email) => {
-    return users.find(user => user.email === email);
-};
-
-exports.createUser = (userData) => {
-    const newUser = {
-        id: Date.now().toString(), // Simple unique ID generator
-        ...userData
-    };
-    users.push(newUser);
-    return newUser;
-};
-
-module.exports = users;
-
+module.exports = mongoose.model('User', userSchema);
