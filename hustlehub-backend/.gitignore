@@ -3,3 +3,4 @@ node_modules/
 server.key
 server.cert
 .env.local
+.DS_Store
