@@ -4,9 +4,9 @@ const cors = require('cors');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config(); 
 const mongoose = require('mongoose');
 const mongoSanitize = require('express-mongo-sanitize');
-require('dotenv').config(); 
 
 const authRoutes = require('./src/routes/authRoutes');
 const errorHandler = require('./src/middleware/errorMiddleware');
@@ -15,12 +15,21 @@ const app = express();
 
 app.use(cors()); 
 app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+
+app.use((req, res, next) => {
+    Object.defineProperty(req, 'query', {
+        writable: true,
+        value: { ...req.query }
+    });
+    next();
+});
 
 // Prevent NoSQL Injection attacks globally
 app.use(mongoSanitize());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB database'))
     .catch((err) => console.error('MongoDB connection error:', err));
 
