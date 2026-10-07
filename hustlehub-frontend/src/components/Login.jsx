@@ -1,6 +1,5 @@
-// src/components/Login.jsx
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -14,12 +13,12 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const response = await axios.post('https://localhost:5000/api/auth/login', {
-                email,
-                password
-            });
+            const response = await api.post('/api/auth/login', { email, password });
             localStorage.setItem('token', response.data.token);
-            // Optional: redirect upon success
+            if (response.data.user) {
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+            }
+            window.location.assign('/gigs');
         } catch (err) {
             if (err.response && err.response.data.errors) {
                 setError(err.response.data.errors[0].msg);
@@ -37,21 +36,21 @@ export default function Login() {
         <div className="auth-container">
             <h2>Login to HustleHub+</h2>
             {error && <div className="error-banner" style={{color: 'red'}}>{error}</div>}
-            
+
             <form onSubmit={handleLogin}>
-                <input 
-                    type="email" 
-                    placeholder="Email Address" 
-                    value={email} 
-                    onChange={(e) => setEmail(e.target.value)} 
-                    required 
+                <input
+                    type="email"
+                    placeholder="Email Address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                 />
-                <input 
-                    type="password" 
-                    placeholder="Password" 
-                    value={password} 
-                    onChange={(e) => setPassword(e.target.value)} 
-                    required 
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                 />
                 <button type="submit" disabled={isLoading}>
                     {isLoading ? 'Logging in...' : 'Login'}
