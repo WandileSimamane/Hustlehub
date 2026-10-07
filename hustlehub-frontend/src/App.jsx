@@ -1,29 +1,50 @@
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
-import GigFeed from './components/GigFeed';
-import GigForm from './components/GigForm';
+import Dashboard from './components/Dashboard';
 import './App.css';
 
+export function getUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user') || 'null');
+  } catch {
+    return null;
+  }
+}
+
+// Sends visitors who are not logged in back to the login page.
+function RequireLogin({ children }) {
+  if (!getUser() || !localStorage.getItem('token')) return <Navigate to="/login" replace />;
+  return children;
+}
+
 function Nav() {
-  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const user = getUser();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.assign('/login');
+    window.location.assign('/');
   };
 
   return (
     <nav className="app-nav" aria-label="Main">
-      <NavLink to="/gigs">Browse gigs</NavLink>
-      {user?.role === 'Freelancer' && <NavLink to="/gigs/new">Create a gig</NavLink>}
-      {!user && <NavLink to="/register">Register</NavLink>}
-      {!user && <NavLink to="/login">Log in</NavLink>}
-      {user && (
-        <button type="button" onClick={handleLogout}>
-          Log out ({user.role})
-        </button>
+      <NavLink to="/" className="app-brand" end>
+        HustleHub+
+      </NavLink>
+      {user ? (
+        <>
+          <NavLink to="/dashboard">Dashboard</NavLink>
+          <button type="button" onClick={handleLogout}>
+            Log out ({user.name || user.role})
+          </button>
+        </>
+      ) : (
+        <>
+          <NavLink to="/login">Log in</NavLink>
+          <NavLink to="/register">Register</NavLink>
+        </>
       )}
     </nav>
   );
@@ -35,12 +56,18 @@ function App() {
       <Nav />
       <main>
         <Routes>
-          <Route path="/" element={<Navigate to="/gigs" replace />} />
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/gigs" element={<GigFeed />} />
-          <Route path="/gigs/new" element={<GigForm />} />
-          <Route path="*" element={<Navigate to="/gigs" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireLogin>
+                <Dashboard />
+              </RequireLogin>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </BrowserRouter>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import api from '../api';
-import { CATEGORIES } from '../gigUtils';
+import { CATEGORIES, decodeEntities } from '../gigUtils';
 import './gigs.css';
 
 const emptyForm = {
@@ -15,14 +15,28 @@ const emptyForm = {
 function readErrors(err) {
   const { status, data } = err.response || {};
   if (!status) return ['Cannot reach the server. Check your connection and try again.'];
-  if (status === 401) return ['Please log in before creating a gig.'];
+  if (status === 401) return ['Please log in before saving a gig.'];
   if (status === 403) return [data?.message || data?.error || 'You are not allowed to do this.'];
   if (Array.isArray(data?.errors)) return data.errors.map((e) => e.msg);
   return [data?.message || 'Something went wrong. Please try again.'];
 }
 
-export default function GigForm({ onCreated }) {
-  const [form, setForm] = useState(emptyForm);
+// Pass `gig` to edit an existing gig; leave it out to create a new one.
+// Stored text is HTML-escaped by the server, so decode it before showing it in the inputs.
+function toForm(gig) {
+  if (!gig) return emptyForm;
+  return {
+    title: decodeEntities(gig.title),
+    description: decodeEntities(gig.description),
+    category: gig.category,
+    price: String(gig.price),
+    deliveryDays: String(gig.deliveryDays),
+  };
+}
+
+export default function GigForm({ gig, onCreated, onCancel }) {
+  const isEdit = Boolean(gig);
+  const [form, setForm] = useState(() => toForm(gig));
   const [errors, setErrors] = useState([]);
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -50,17 +64,21 @@ export default function GigForm({ onCreated }) {
       return;
     }
 
+    const payload = {
+      title: form.title,
+      description: form.description,
+      category: form.category,
+      price: Number(form.price),
+      deliveryDays: days,
+    };
+
     setSubmitting(true);
     try {
-      const res = await api.post('/api/gigs', {
-        title: form.title,
-        description: form.description,
-        category: form.category,
-        price: Number(form.price),
-        deliveryDays: days,
-      });
-      setSuccess('Gig created.');
-      setForm(emptyForm);
+      const res = isEdit
+        ? await api.put(`/api/gigs/${gig._id}`, payload)
+        : await api.post('/api/gigs', payload);
+      setSuccess(isEdit ? 'Gig updated.' : 'Gig created.');
+      if (!isEdit) setForm(emptyForm);
       if (onCreated) onCreated(res.data.gig);
     } catch (err) {
       setErrors(readErrors(err));
@@ -71,7 +89,7 @@ export default function GigForm({ onCreated }) {
 
   return (
     <section className="gig-section" aria-labelledby="gig-form-title">
-      <h2 id="gig-form-title">Create a gig</h2>
+      <h2 id="gig-form-title">{isEdit ? 'Edit gig' : 'Create a gig'}</h2>
 
       <form className="gig-form" onSubmit={handleSubmit} noValidate>
         <label htmlFor="gig-title">
@@ -144,8 +162,13 @@ export default function GigForm({ onCreated }) {
         )}
 
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Creating gig...' : 'Create gig'}
+          {submitting ? 'Saving...' : isEdit ? 'Save changes' : 'Create gig'}
         </button>
+        {isEdit && onCancel && (
+          <button type="button" className="btn-quiet" onClick={onCancel}>
+            Cancel
+          </button>
+        )}
       </form>
     </section>
   );
