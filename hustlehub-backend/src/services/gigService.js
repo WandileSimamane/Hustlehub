@@ -1,4 +1,3 @@
-// src/services/gigService.js
 const mongoose = require('mongoose');
 const Gig = require('../models/gigModel');
 
@@ -51,11 +50,14 @@ exports.updateGig = async (id, user, data) => {
     const gig = await Gig.findById(id);
     if (!gig) throw httpError(404, 'Gig not found.');
 
-    // Only the freelancer who created the gig can edit it
-    if (gig.owner.toString() !== user.id) {
+    // The freelancer who created the gig can edit it; Admin can edit any gig
+    const isOwner = gig.owner.toString() === user.id;
+    const isAdmin = user.role === 'Admin';
+    if (!isOwner && !isAdmin) {
         throw httpError(403, 'You can only edit your own gigs.');
     }
 
+    // pickFields never includes "owner", so an edit can't change who owns the gig
     gig.set(pickFields(data));
     await gig.save();
     return gig;

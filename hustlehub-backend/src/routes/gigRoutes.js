@@ -15,13 +15,30 @@ router.get('/mine', verifyToken, authorizeRoles('Freelancer'), gigController.get
 
 router.get('/:id', gigController.getGig);
 
-// Freelancer only: create
-router.post('/', verifyToken, authorizeRoles('Freelancer'), createGigRules, gigController.createGig);
-
-// Freelancer only, and the service also checks they own the gig
-router.put('/:id', verifyToken, authorizeRoles('Freelancer'), updateGigRules, gigController.updateGig);
+// Freelancer or Admin: create
+router.post(
+  '/',
+  verifyToken,
+  authorizeRoles('Freelancer', 'Admin'),
+  createGigRules,
+  gigController.createGig
+);
 
 // Freelancer (own gigs) or Admin (any gig); the service decides which
-router.delete('/:id', verifyToken, authorizeRoles('Freelancer', 'Admin'), gigController.deleteGig);
+router.put(
+  '/:id',
+  verifyToken,
+  authorizeRoles('Freelancer', 'Admin'),
+  updateGigRules,
+  gigController.updateGig
+);
+
+// Freelancer (own gigs) or Admin (any gig); the service decides which
+router.delete(
+  '/:id',
+  verifyToken,
+  authorizeRoles('Freelancer', 'Admin'),
+  gigController.deleteGig
+);
 
 module.exports = router;
