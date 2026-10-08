@@ -1,5 +1,6 @@
 const Booking = require('../models/bookingModel');
 const Gig = require('../models/gigModel');
+const Transaction = require('../models/transactionModel');
 
 // Client creates a booking for a gig
 exports.createBooking = async (req, res, next) => {
@@ -25,7 +26,18 @@ exports.createBooking = async (req, res, next) => {
             status: 'Pending'
         });
 
-        res.status(201).json({ message: 'Booking created successfully', booking });
+        const transaction = await Transaction.create({
+            client: clientId,
+            freelancer: freelancerId,
+            gig: gigId,
+            amount: gig.price || 0 
+        });
+
+        res.status(201).json({ 
+            message: 'Booking and Transaction created successfully', 
+            booking,
+            transaction 
+        });
     } catch (error) {
         next(error);
     }
