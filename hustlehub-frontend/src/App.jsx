@@ -3,6 +3,7 @@ import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import MyBookings from './components/MyBookings';
 import './App.css';
 
 export function getUser() {
@@ -59,6 +60,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
           <Route
             path="/dashboard"
             element={

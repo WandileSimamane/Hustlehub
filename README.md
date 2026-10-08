@@ -125,7 +125,7 @@ Open Gitbash terminal to run and ensure the files under the hustlehub-backend fo
 openssl req -nodes -new -x509 -keyout server.key -out server.cert -days 365 -subj "/CN=localhost"
 ```
 
-Create a `.env` file under the hustlehub-backend folder :
+cd Create a `.env` file under the hustlehub-backend folder :
 
 ```
 PORT=5000

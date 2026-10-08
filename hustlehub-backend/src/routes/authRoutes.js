@@ -5,9 +5,10 @@ const router = express.Router();
 const { registerUser, loginUser } = require('../controllers/authController');
 const { verifyToken } = require('../middleware/authMiddleware');
 const { registerRules, loginRules, validate } = require('../middleware/validationMiddleware');
+const { loginLimiter } = require('../middleware/rateLimiter');
 
 router.post('/register', registerRules, validate, registerUser);
-router.post('/login', loginRules, validate, loginUser);
+router.post('/login', loginLimiter, loginRules, validate, loginUser);
 
 router.get('/protected-test', verifyToken, (req, res) => {
     res.status(200).json({
