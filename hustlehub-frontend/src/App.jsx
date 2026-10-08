@@ -37,6 +37,9 @@ function Nav() {
       {user ? (
         <>
           <NavLink to="/dashboard">Dashboard</NavLink>
+          {user.role === 'Client' && (
+             <NavLink to="/my-bookings">My Bookings</NavLink>
+          )}
           <button type="button" onClick={handleLogout}>
             Log out ({user.name || user.role})
           </button>
