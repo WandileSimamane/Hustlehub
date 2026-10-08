@@ -51,6 +51,9 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
     try {
       setBookingMessage('');
       const response = await api.post('/api/bookings', { gigId });
+      
+      alert(response.data.message || 'Gig successfully booked! Status is pending.');
+      
       setBookingMessage(response.data.message || 'Gig successfully booked! Status is pending.');
       setTimeout(() => setBookingMessage(''), 4000);
     } catch (err) {
