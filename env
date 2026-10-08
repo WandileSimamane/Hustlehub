@@ -1,0 +1,3 @@
+JWT_SECRET=c4635fd54ffe87052eb60caac7f3a36aec27caf42b9c79126a081a3e05b56586b3dc88c8fd38db8ae67e456d76fcd28fc7ca5a1d3d6662050f7358c5f15fa405
+PORT=5000
+MONGODB_URI=mongodb+srv://andiswa:kh6hrH6IknB67MQ6@cluster0.e03tiqd.mongodb.net/hustlehub?appName=Cluster0
