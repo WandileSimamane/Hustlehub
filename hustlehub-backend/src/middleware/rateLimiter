@@ -1,0 +1,19 @@
+const rateLimit = require('express-rate-limit');
+
+// Strict limit for login (prevents brute-force password guessing)
+exports.loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 5, 
+    message: { message: 'Too many login attempts from this IP, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Moderate limit for bookings (prevents spamming the 'Book Now' button)
+exports.bookingLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10, // Limit each IP to 10 bookings per hour
+    message: { message: 'Booking limit reached. Please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
