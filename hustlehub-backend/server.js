@@ -15,9 +15,12 @@ const app = express();
 const authRoutes = require('./src/routes/authRoutes');
 const gigRoutes = require('./src/routes/gigRoutes');
 const bookingRoutes = require('./src/routes/bookingRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');        // MBALI
+const securityHeaders = require('./src/middleware/securityHeaders');    // MBALI
 const errorHandler = require('./src/middleware/errorMiddleware');
 
 // 3. Middleware
+app.use(securityHeaders); // MBALI: Helmet + CSP, first so every response gets the headers
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -46,6 +49,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/gigs', gigRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/dashboard', dashboardRoutes); // MBALI
 
 app.use(errorHandler);
 
