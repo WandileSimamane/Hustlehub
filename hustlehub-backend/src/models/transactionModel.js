@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
+    booking: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Booking',
+        required: true
+    },
     client: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

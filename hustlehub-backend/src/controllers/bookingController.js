@@ -1,8 +1,8 @@
 const Booking = require('../models/bookingModel');
 const Gig = require('../models/gigModel');
-const Transaction = require('../models/transactionModel');
+const Transaction = require('../models/transactionModel.js');
 
-// Client creates a booking for a gig
+// Client creates a booking for a gig (no transaction yet: that happens on confirmation)
 exports.createBooking = async (req, res, next) => {
     try {
         const { gigId } = req.body;
@@ -26,17 +26,9 @@ exports.createBooking = async (req, res, next) => {
             status: 'Pending'
         });
 
-        const transaction = await Transaction.create({
-            client: clientId,
-            freelancer: freelancerId,
-            gig: gigId,
-            amount: gig.price || 0 
-        });
-
-        res.status(201).json({ 
-            message: 'Booking and Transaction created successfully', 
-            booking,
-            transaction 
+        res.status(201).json({
+            message: 'Booking created successfully',
+            booking
         });
     } catch (error) {
         next(error);
@@ -72,6 +64,7 @@ exports.updateBookingStatus = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { status } = req.body; // 'Confirmed' or 'Declined'
+        const userId = req.user.id || req.user._id;
 
         if (!['Confirmed', 'Declined'].includes(status)) {
             return res.status(400).json({ message: 'Invalid status value' });
@@ -82,8 +75,31 @@ exports.updateBookingStatus = async (req, res, next) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
+        // Only the freelancer who owns this booking (or an Admin) may change it
+        if (req.user.role !== 'Admin' && booking.freelancer.toString() !== String(userId)) {
+            return res.status(403).json({ message: 'You can only update your own bookings' });
+        }
+
         booking.status = status;
         await booking.save();
+
+        if (status === 'Confirmed') {
+            // Create the transaction once per booking (guards against double clicks)
+            const existing = await Transaction.findOne({ booking: booking._id });
+            if (!existing) {
+                const gig = await Gig.findById(booking.gig);
+                await Transaction.create({
+                    booking: booking._id,
+                    client: booking.client,
+                    freelancer: booking.freelancer,
+                    gig: booking.gig,
+                    amount: gig ? gig.price || 0 : 0
+                });
+            }
+        } else {
+            // Declined: make sure no income is recorded for this booking
+            await Transaction.deleteOne({ booking: booking._id });
+        }
 
         res.status(200).json({ message: `Booking status updated to ${status}`, booking });
     } catch (error) {
