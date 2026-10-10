@@ -8,6 +8,12 @@ require('dotenv').config({ path: __dirname + '/.env' });
 const mongoose = require('mongoose');
 const mongoSanitize = require('express-mongo-sanitize');
 
+// Local-network workaround: only runs if USE_PUBLIC_DNS=true is set in your own .env
+if (process.env.USE_PUBLIC_DNS === 'true') {
+    const dns = require('node:dns');
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
+
 // 1. Initialize Express App FIRST
 const app = express();
 
