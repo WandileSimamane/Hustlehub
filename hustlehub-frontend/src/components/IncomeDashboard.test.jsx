@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { vi, afterEach, test, expect } from 'vitest';
-import Dashboard from './Dashboard';
+import '@testing-library/jest-dom/vitest';
+import IncomeDashboard from './IncomeDashboard';
 
 const mockFetch = () =>
   vi.fn((url) => {
@@ -33,7 +34,7 @@ afterEach(() => {
 
 test('renders total earnings, bookings and transactions', async () => {
   vi.stubGlobal('fetch', mockFetch());
-  render(<Dashboard />);
+  render(<IncomeDashboard />);
 
   expect(await screen.findByTestId('total-earnings')).toHaveTextContent('R1500.00');
   expect(screen.getByText('Logo Design')).toBeInTheDocument();
@@ -42,14 +43,14 @@ test('renders total earnings, bookings and transactions', async () => {
 
 test('shows a safe error message when the API fails', async () => {
   vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: false, status: 500 })));
-  render(<Dashboard />);
+  render(<IncomeDashboard />);
 
   expect(await screen.findByRole('alert')).toHaveTextContent(/could not load/i);
 });
 
 test('shows an access message for non-freelancers', async () => {
   vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: false, status: 403 })));
-  render(<Dashboard />);
+  render(<IncomeDashboard />);
 
   expect(await screen.findByRole('alert')).toHaveTextContent(/only freelancers/i);
 });

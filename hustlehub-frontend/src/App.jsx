@@ -3,6 +3,7 @@ import Home from './components/Home';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
+import IncomeDashboard from './components/IncomeDashboard';
 import MyBookings from './components/MyBookings';
 import './App.css';
 
@@ -37,6 +38,9 @@ function Nav() {
       {user ? (
         <>
           <NavLink to="/dashboard">Dashboard</NavLink>
+          {user.role === 'Freelancer' && (
+            <NavLink to="/income">Income</NavLink> // MBALI
+          )}
           {user.role === 'Client' && (
              <NavLink to="/my-bookings">My Bookings</NavLink>
           )}
@@ -69,6 +73,15 @@ function App() {
             element={
               <RequireLogin>
                 <Dashboard />
+              </RequireLogin>
+            }
+          />
+          {/* MBALI: Freelancer income dashboard */}
+          <Route
+            path="/income"
+            element={
+              <RequireLogin>
+                <IncomeDashboard />
               </RequireLogin>
             }
           />

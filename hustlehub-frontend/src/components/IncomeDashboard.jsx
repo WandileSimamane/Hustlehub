@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 const API = import.meta.env.VITE_API_URL || 'https://localhost:5000';
 const rand = (n) => `R${Number(n || 0).toFixed(2)}`;
 
-export default function Dashboard() {
+export default function IncomeDashboard() {
   const [summary, setSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -11,7 +11,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); // match Sphosethu's key
+    const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
     const get = async (path) => {
@@ -40,7 +40,7 @@ export default function Dashboard() {
   if (error) return <p role="alert">{error}</p>;
 
   return (
-    <main style={{ maxWidth: 900, margin: '0 auto', padding: 16 }}>
+    <div style={{ maxWidth: 900, margin: '0 auto', padding: 16 }}>
       <h1>Freelancer Dashboard</h1>
 
       <section aria-label="Total earnings">
@@ -93,6 +93,6 @@ export default function Dashboard() {
           </tbody>
         </table>
       )}
-    </main>
+    </div>
   );
 }
