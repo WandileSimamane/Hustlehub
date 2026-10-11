@@ -21,17 +21,7 @@ export default function Home() {
         </Link>
       </div>
 
-      <ul className="home-roles">
-        <li>
-          <strong>Clients</strong> browse gigs and book the one they need.
-        </li>
-        <li>
-          <strong>Freelancers</strong> post gigs and track their bookings and income.
-        </li>
-        <li>
-          <strong>Admins</strong> manage every gig on the platform.
-        </li>
-      </ul>
+      
     </section>
   );
 }

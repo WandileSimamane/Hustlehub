@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "4274c974-253b-42b6-ab64-4eb7b4b1c7af",
+    "_postman_id": "9dd71c64-9e59-480e-91f7-a9b8c2a454b9",
     "name": "Hustlehub",
     "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "56771233",
-    "_collection_link": "https://go.postman.co/collection/56771233-4274c974-253b-42b6-ab64-4eb7b4b1c7af?source=collection_link"
+    "_exporter_id": "45092926",
+    "_collection_link": "https://go.postman.co/collection/45092926-9dd71c64-9e59-480e-91f7-a9b8c2a454b9?source=collection_link"
   },
   "item": [
     {
@@ -171,6 +171,36 @@
     },
     {
       "name": "Login: Incorrect Password",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"testUser\",\r\n  \"email\": \"test@hustlehub.com\",\r\n  \"password\": \"SecurePassword\"\r\n}\r\n\r\n\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://localhost:5000/api/auth/login",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login: Rate Limit Triggered",
       "request": {
         "method": "POST",
         "header": [],
@@ -383,6 +413,74 @@
             "api",
             "auth",
             "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Booking: Success",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Create Booking: Freelancer Blocked",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 403 Forbidden\", function () {\r",
+              "    pm.response.to.have.status(403);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhYzdlNWJiZGJjMzU4YWFmZTZjYzg4NSIsInJvbGUiOiJDbGllbnQiLCJpYXQiOjE3OTE3MDY3MTYsImV4cCI6MTc5MTcxMDMxNn0.KuiwO45GodlyRgxt979gXtwfgBqpF3dunotNAD4w-GQ",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhY2E4ZDY0NDFjMTk4MmM2NzhjNDA4NyIsInJvbGUiOiJGcmVlbGFuY2VyIiwiaWF0IjoxNzkxNzA4MTA2LCJleHAiOjE3OTE3MTE3MDZ9.P2JPC6aCcOPeQljZ7spEx79oAMAyBdwwZ3RwTOkOrXo",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"gigId\": \"ObjectId('6aca81021b49fe759a9b544b')\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://localhost:5000/api/bookings",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "bookings"
           ]
         }
       },
