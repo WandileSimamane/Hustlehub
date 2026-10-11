@@ -9,7 +9,6 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [bookingMessage, setBookingMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     let cancelled = false;
