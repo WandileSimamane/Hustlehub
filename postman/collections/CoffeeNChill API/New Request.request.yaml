@@ -1,5 +1,22 @@
 $kind: http-request
 description: ""
-url: ""
-method: GET
+url: http://localhost:7071/api/orders
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{\r
+
+    \  \"orderId\": \"ORD-101\",\r
+
+    \  \"customerName\": \"Andiswa\",\r
+
+    \  \"selectedItemSKUs\": [\"SKU-001\", \"SKU-002\"],\r
+
+    \  \"totalPrice\": 85.50,\r
+
+    \  \"orderTimestamp\": \"2026-10-08T16:30:00Z\"\r
+
+    }"
 order: 928662692449937
