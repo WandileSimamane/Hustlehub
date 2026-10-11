@@ -19,7 +19,12 @@ export default function Register() {
         setIsLoading(true);
 
         try {
-            await api.post('/api/auth/register', { name, email, password, role });
+            await api.post('/api/auth/register', {
+                name,
+                email,
+                password,
+                role
+            });
             setSuccess('Registration successful! Redirecting to login...');
             setTimeout(() => navigate('/login'), 1500);
         } catch (err) {
@@ -34,72 +39,69 @@ export default function Register() {
         }
     };
 
-    const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-governor-bay/50 transition-colors";
-
     return (
-        <div className="min-h-[80vh] flex items-center justify-center p-6">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100 p-8">
+        <div className="min-h-[80vh] flex items-center justify-center">
+            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
                 <div className="text-center mb-8">
-                    <h2 className="text-3xl font-black text-governor-bay mb-2">Join HustleHub+</h2>
-                    <p className="text-gray-500">Create an account to start collaborating.</p>
+                    <h2 className="text-3xl font-black text-[#393bc6]">Join HustleHub+</h2>
+                    <p className="text-gray-500 mt-2">Create your account to get started.</p>
                 </div>
-                
-                {error && <div className="mb-6 p-4 bg-radical-red/10 border border-radical-red/20 text-radical-red rounded-xl text-sm font-medium">{error}</div>}
-                {success && <div className="mb-6 p-4 bg-caribbean-green/10 border border-caribbean-green/20 text-caribbean-green rounded-xl text-sm font-medium">{success}</div>}
-                
-                <form onSubmit={handleRegister} className="flex flex-col gap-5">
-                    <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
-                        Full Name
+
+                {error && <div className="mb-6 p-4 bg-red-50 text-[#ff355e] text-sm font-medium rounded-xl border border-red-100">{error}</div>}
+                {success && <div className="mb-6 p-4 bg-green-50 text-[#00cc99] text-sm font-medium rounded-xl border border-green-100">{success}</div>}
+
+                <form onSubmit={handleRegister} className="space-y-5">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
                         <input 
                             type="text" 
-                            placeholder="John Doe" 
+                            placeholder="e.g. Jane Doe" 
                             value={name} 
                             onChange={(e) => setName(e.target.value)} 
                             required 
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#393bc6] focus:ring-2 focus:ring-[#393bc6]/20 transition-all outline-none"
                         />
-                    </label>
-                    <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
-                        Email Address
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
                         <input 
                             type="email" 
-                            placeholder="john@example.com" 
+                            placeholder="you@example.com" 
                             value={email} 
                             onChange={(e) => setEmail(e.target.value)} 
                             required 
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#393bc6] focus:ring-2 focus:ring-[#393bc6]/20 transition-all outline-none"
                         />
-                    </label>
-                    <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
-                        Password
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
                         <input 
                             type="password" 
                             placeholder="Min. 8 characters" 
                             value={password} 
                             onChange={(e) => setPassword(e.target.value)} 
                             required 
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#393bc6] focus:ring-2 focus:ring-[#393bc6]/20 transition-all outline-none"
                         />
-                    </label>
-                    <label className="flex flex-col gap-1.5 text-sm font-semibold text-gray-700">
-                        Account Role
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">I want to join as a</label>
                         <select 
                             value={role} 
                             onChange={(e) => setRole(e.target.value)}
-                            className={inputClass}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#393bc6] focus:ring-2 focus:ring-[#393bc6]/20 transition-all outline-none bg-white"
                         >
-                            <option value="Client">I want to hire (Client)</option>
-                            <option value="Freelancer">I want to work (Freelancer)</option>
+                            <option value="Client">Client (Hire talent)</option>
+                            <option value="Freelancer">Freelancer (Find work)</option>
                             <option value="Admin">Admin</option>
                         </select>
-                    </label>
-                    
+                    </div>
                     <button 
                         type="submit" 
                         disabled={isLoading}
-                        className="mt-4 w-full bg-governor-bay hover:bg-indigo-800 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-governor-bay/30 transition-all active:scale-[0.98] disabled:opacity-70"
+                        className="w-full py-4 mt-4 bg-gradient-to-r from-[#393bc6] to-[#2e30a8] text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {isLoading ? 'Registering...' : 'Create Account'}
+                        {isLoading ? 'Creating account...' : 'Register Now'}
                     </button>
                 </form>
             </div>

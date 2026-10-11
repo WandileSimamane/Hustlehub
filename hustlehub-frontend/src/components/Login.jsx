@@ -33,29 +33,52 @@ export default function Login() {
     };
 
     return (
-        <div className="auth-container">
-            <h2>Login to HustleHub+</h2>
-            {error && <div className="error-banner" style={{color: 'red'}}>{error}</div>}
+        <div className="min-h-[80vh] flex items-center justify-center">
+            <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-gray-100 p-8">
+                <div className="text-center mb-8">
+                    <h2 className="text-3xl font-black text-[#393bc6]">Login to HustleHub+</h2>
+                    <p className="text-gray-500 mt-2">Welcome back! Please enter your details.</p>
+                </div>
 
-            <form onSubmit={handleLogin}>
-                <input
-                    type="email"
-                    placeholder="Email Address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                <button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Logging in...' : 'Login'}
-                </button>
-            </form>
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 text-[#ff355e] text-sm font-medium rounded-xl border border-red-100">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleLogin} className="space-y-5">
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+                        <input
+                            type="email"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#393bc6] focus:ring-2 focus:ring-[#393bc6]/20 transition-all outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
+                        <input
+                            type="password"
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#393bc6] focus:ring-2 focus:ring-[#393bc6]/20 transition-all outline-none"
+                        />
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        disabled={isLoading}
+                        className="w-full py-4 mt-4 bg-gradient-to-r from-[#393bc6] to-[#2e30a8] text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? 'Logging in...' : 'Login'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

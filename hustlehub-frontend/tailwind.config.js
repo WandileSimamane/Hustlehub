@@ -1,15 +1,10 @@
-module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
   ],
-  theme: {
-    extend: {
-      colors: {
-        'caribbean-green': '#00CC99',
-        'governor-bay': '#3132B0',
-        'radical-red': '#FF355E',
-      },
-    },
-  },
-  plugins: [],
-}
+})

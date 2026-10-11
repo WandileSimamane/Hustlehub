@@ -11,7 +11,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); 
+    const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
 
     const get = async (path) => {
@@ -37,110 +37,100 @@ export default function Dashboard() {
   }, []);
 
   if (loading) return (
-    <div className="flex justify-center items-center min-h-[50vh]">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-governor-bay"></div>
+    <div className="flex justify-center items-center py-20">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#393bc6]"></div>
     </div>
   );
-  
-  if (error) return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-radical-red/10 border border-radical-red/20 text-radical-red rounded-xl font-medium text-center">
-      {error}
-    </div>
-  );
+  if (error) return <p role="alert" className="bg-red-50 text-[#ff355e] p-4 rounded-xl border border-red-100 font-medium text-center">{error}</p>;
 
   return (
-    <main className="max-w-6xl mx-auto w-full p-6 py-10">
+    <main className="max-w-5xl mx-auto py-8">
       <h1 className="text-3xl font-black text-gray-900 mb-8">Freelancer Dashboard</h1>
 
-      {/* Summary Card */}
       <section aria-label="Total earnings" className="mb-10">
-        <div className="bg-gradient-to-br from-governor-bay to-indigo-900 p-8 rounded-3xl shadow-lg text-white relative overflow-hidden">
-          <div className="relative z-10">
-            <h2 className="text-indigo-200 font-medium mb-2 uppercase tracking-wider text-sm">Total Earnings</h2>
-            <p data-testid="total-earnings" className="text-5xl font-black text-white mb-2">
-              {rand(summary.totalIncome)}
-            </p>
-            <p className="text-caribbean-green font-medium">
-              {summary.transactionCount} successful transaction(s)
-            </p>
-          </div>
-          <div className="absolute right-0 bottom-0 opacity-10">
-            <svg className="w-48 h-48 -mb-10 -mr-10" fill="currentColor" viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-          </div>
+        <div className="bg-gradient-to-br from-[#393bc6] to-[#2e30a8] rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+          <h2 className="text-lg font-medium text-blue-100 mb-2 uppercase tracking-wide">Total Earnings</h2>
+          <p data-testid="total-earnings" className="text-5xl font-black mb-2">
+            {rand(summary.totalIncome)}
+          </p>
+          <p className="text-blue-200 text-sm">{summary.transactionCount} successful transaction(s)</p>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Bookings Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900">Recent Bookings</h2>
-          </div>
-          {bookings.length === 0 ? (
-            <p className="p-6 text-gray-500 text-center">No bookings yet.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-gray-50 text-gray-600 text-sm">
-                  <tr>
-                    <th className="p-4 font-semibold">Gig</th>
-                    <th className="p-4 font-semibold">Client</th>
-                    <th className="p-4 font-semibold">Status</th>
-                    <th className="p-4 font-semibold">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {bookings.map((b) => (
-                    <tr key={b._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-4 text-gray-900 font-medium">{b.gig?.title}</td>
-                      <td className="p-4 text-gray-600">{b.client?.name}</td>
-                      <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          b.status === 'Confirmed' ? 'bg-caribbean-green/10 text-caribbean-green' :
-                          b.status === 'Declined' ? 'bg-radical-red/10 text-radical-red' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>
-                          {b.status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-gray-500 text-sm whitespace-nowrap">{new Date(b.createdAt).toLocaleDateString()}</td>
+      <div className="grid lg:grid-cols-2 gap-8">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-[#00cc99]"></span>
+            Recent Bookings
+          </h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {bookings.length === 0 ? (
+              <p className="p-6 text-gray-500 text-center">No bookings yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm uppercase tracking-wider">
+                      <th className="p-4 font-semibold">Gig</th>
+                      <th className="p-4 font-semibold">Client</th>
+                      <th className="p-4 font-semibold">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {bookings.map((b) => (
+                      <tr key={b._id} className="hover:bg-gray-50 transition-colors">
+                        <td className="p-4 font-medium text-gray-900">{b.gig?.title}</td>
+                        <td className="p-4 text-gray-600">{b.client?.name}</td>
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                            b.status === 'Confirmed' ? 'bg-green-100 text-green-700' :
+                            b.status === 'Declined' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {b.status || 'Pending'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Transactions Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900">Transactions</h2>
-          </div>
-          {transactions.length === 0 ? (
-            <p className="p-6 text-gray-500 text-center">No transactions yet.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-gray-50 text-gray-600 text-sm">
-                  <tr>
-                    <th className="p-4 font-semibold">Date</th>
-                    <th className="p-4 font-semibold">Client</th>
-                    <th className="p-4 font-semibold">Amount</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {transactions.map((t) => (
-                    <tr key={t._id} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-4 text-gray-500 text-sm whitespace-nowrap">{new Date(t.createdAt).toLocaleDateString()}</td>
-                      <td className="p-4 text-gray-600">{t.client?.name}</td>
-                      <td className="p-4 text-gray-900 font-bold">{rand(t.amount)}</td>
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-[#ff355e]"></span>
+            Transactions
+          </h2>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {transactions.length === 0 ? (
+              <p className="p-6 text-gray-500 text-center">No transactions yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 text-sm uppercase tracking-wider">
+                      <th className="p-4 font-semibold">Date</th>
+                      <th className="p-4 font-semibold">Client</th>
+                      <th className="p-4 font-semibold">Amount</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {transactions.map((t) => (
+                      <tr key={t._id} className="hover:bg-gray-50 transition-colors">
+                        <td className="p-4 text-gray-500 text-sm">{new Date(t.createdAt).toLocaleDateString()}</td>
+                        <td className="p-4 text-gray-600">{t.client?.name}</td>
+                        <td className="p-4 font-bold text-gray-900">{rand(t.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </main>
