@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import api from '../api';
 import { CATEGORIES, decodeEntities } from '../gigUtils';
-import './gigs.css';
 
 const emptyForm = {
   title: '',
@@ -11,7 +10,6 @@ const emptyForm = {
   deliveryDays: '',
 };
 
-// Turns an API failure into messages that are safe to show (no stack traces or internals).
 function readErrors(err) {
   const { status, data } = err.response || {};
   if (!status) return ['Cannot reach the server. Check your connection and try again.'];
@@ -21,8 +19,6 @@ function readErrors(err) {
   return [data?.message || 'Something went wrong. Please try again.'];
 }
 
-// Pass `gig` to edit an existing gig; leave it out to create a new one.
-// Stored text is HTML-escaped by the server, so decode it before showing it in the inputs.
 function toForm(gig) {
   if (!gig) return emptyForm;
   return {
@@ -50,7 +46,6 @@ export default function GigForm({ gig, onCreated, onCancel }) {
     setErrors([]);
     setSuccess('');
 
-    // Quick checks for instant feedback. The server validates everything again.
     const problems = [];
     const days = Number(form.deliveryDays);
     if (form.title.trim().length < 3) problems.push('Title must be at least 3 characters.');
@@ -87,88 +82,66 @@ export default function GigForm({ gig, onCreated, onCancel }) {
     }
   };
 
+  const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#393bc6] focus:ring-2 focus:ring-[#393bc6]/20 transition-all outline-none bg-white";
+  const labelClass = "block text-sm font-bold text-gray-700 mb-1 mt-4";
+
   return (
-    <section className="gig-section" aria-labelledby="gig-form-title">
-      <h2 id="gig-form-title">{isEdit ? 'Edit gig' : 'Create a gig'}</h2>
+    <section aria-labelledby="gig-form-title" className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-10">
+      <h2 id="gig-form-title" className="text-2xl font-black text-gray-900 mb-6">
+        {isEdit ? 'Edit gig' : 'Create a gig'}
+      </h2>
 
-      <form className="gig-form" onSubmit={handleSubmit} noValidate>
-        <label htmlFor="gig-title">
-          Title
-          <input id="gig-title" name="title" type="text" value={form.title} onChange={handleChange} />
-        </label>
+      <form onSubmit={handleSubmit} noValidate>
+        <label htmlFor="gig-title" className={labelClass}>Title</label>
+        <input id="gig-title" name="title" type="text" value={form.title} onChange={handleChange} className={inputClass} />
 
-        <label htmlFor="gig-description">
-          Description
-          <textarea
-            id="gig-description"
-            name="description"
-            rows={5}
-            value={form.description}
-            onChange={handleChange}
-          />
-        </label>
+        <label htmlFor="gig-description" className={labelClass}>Description</label>
+        <textarea id="gig-description" name="description" rows={4} value={form.description} onChange={handleChange} className={inputClass} />
 
-        <label htmlFor="gig-category">
-          Category
-          <select id="gig-category" name="category" value={form.category} onChange={handleChange}>
-            {CATEGORIES.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="gig-category" className={labelClass}>Category</label>
+            <select id="gig-category" name="category" value={form.category} onChange={handleChange} className={inputClass}>
+              {CATEGORIES.map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
+          </div>
 
-        <label htmlFor="gig-price">
-          Price (R)
-          <input
-            id="gig-price"
-            name="price"
-            type="number"
-            min="1"
-            step="0.01"
-            value={form.price}
-            onChange={handleChange}
-          />
-        </label>
+          <div>
+            <label htmlFor="gig-price" className={labelClass}>Price (R)</label>
+            <input id="gig-price" name="price" type="number" min="1" step="0.01" value={form.price} onChange={handleChange} className={inputClass} />
+          </div>
 
-        <label htmlFor="gig-days">
-          Delivery time (days)
-          <input
-            id="gig-days"
-            name="deliveryDays"
-            type="number"
-            min="1"
-            max="90"
-            step="1"
-            value={form.deliveryDays}
-            onChange={handleChange}
-          />
-        </label>
+          <div>
+            <label htmlFor="gig-days" className={labelClass}>Delivery time (days)</label>
+            <input id="gig-days" name="deliveryDays" type="number" min="1" max="90" step="1" value={form.deliveryDays} onChange={handleChange} className={inputClass} />
+          </div>
+        </div>
 
         {errors.length > 0 && (
-          <div role="alert">
-            {errors.map((message) => (
-              <p className="gig-error" key={message}>
-                {message}
-              </p>
-            ))}
+          <div role="alert" className="mt-6 p-4 bg-red-50 text-[#ff355e] text-sm font-medium rounded-xl border border-red-100">
+            {errors.map((message) => <p key={message}>{message}</p>)}
           </div>
         )}
+        
         {success && (
-          <p className="gig-success" role="status">
+          <div role="status" className="mt-6 p-4 bg-green-50 text-[#00cc99] text-sm font-medium rounded-xl border border-green-100">
             {success}
-          </p>
+          </div>
         )}
 
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Saving...' : isEdit ? 'Save changes' : 'Create gig'}
-        </button>
-        {isEdit && onCancel && (
-          <button type="button" className="btn-quiet" onClick={onCancel}>
-            Cancel
+        <div className="flex gap-4 mt-8">
+          <button type="submit" disabled={submitting} className="flex-1 py-4 bg-[#393bc6] hover:bg-[#2e30a8] text-white font-bold rounded-xl shadow-md transition-colors disabled:opacity-70">
+            {submitting ? 'Saving...' : isEdit ? 'Save changes' : 'Create gig'}
           </button>
-        )}
+          
+          {isEdit && onCancel && (
+            <button type="button" onClick={onCancel} className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors">
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     </section>
   );
