@@ -6,6 +6,9 @@ import Dashboard from './components/Dashboard';
 import IncomeDashboard from './components/IncomeDashboard';
 import MyBookings from './components/MyBookings';
 import GigFeed from './components/GigFeed';
+import GigManager from './components/GigManager'; 
+import FreelancerBookings from './components/FreelancerBookings';
+
 export function getUser() {
   try {
     return JSON.parse(localStorage.getItem('user') || 'null');
@@ -14,7 +17,6 @@ export function getUser() {
   }
 }
 
-// Sends visitors who are not logged in back to the login page.
 function RequireLogin({ children }) {
   if (!getUser() || !localStorage.getItem('token')) return <Navigate to="/login" replace />;
   return children;
@@ -46,7 +48,6 @@ function Nav() {
             </NavLink>
             {user && (
               <div className="hidden sm:flex sm:space-x-8">
-                {/* Client-only links */}
                 {user.role === 'Client' && (
                   <>
                     <NavLink to="/gigs" className={navLinkClass}>Browse Gigs</NavLink>
@@ -54,11 +55,12 @@ function Nav() {
                   </>
                 )}
                 
-                {/* Freelancer-only links */}
                 {user.role === 'Freelancer' && (
                   <>
                     <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
                     <NavLink to="/income" className={navLinkClass}>Income</NavLink>
+                    <NavLink to="/manage-gigs" className={navLinkClass}>Manage Gigs</NavLink>
+                    <NavLink to="/manage-bookings" className={navLinkClass}>Manage Bookings</NavLink> {/* NEW */}
                   </>
                 )}
               </div>
@@ -94,36 +96,47 @@ function Nav() {
 }
 
 function App() {
+  const user = getUser();
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50 font-sans">
-
-        
         <Nav />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/gigs" element={ <RequireLogin> <GigFeed /> </RequireLogin>  }/>
-            <Route path="/my-bookings" element={<MyBookings />} />
-            <Route
-              path="/dashboard"
+            
+            {/* Client Routes */}
+            <Route path="/gigs" element={<RequireLogin><GigFeed /></RequireLogin>} />
+            <Route path="/my-bookings" element={<RequireLogin><MyBookings /></RequireLogin>} />
+        
+           {/* Freelancer Routes */}
+            <Route path="/dashboard" element={<RequireLogin><Dashboard /></RequireLogin>} />
+            <Route path="/income" element={<RequireLogin><IncomeDashboard /></RequireLogin>} />
+            <Route 
+              path="/manage-gigs" 
+              element={<RequireLogin><GigManager ownerId={user?._id || user?.id} /></RequireLogin>} 
+            />
+            
+            {/*Freelancer Booking Management Route */}
+            <Route 
+              path="/manage-bookings" 
+              element={<RequireLogin><FreelancerBookings /></RequireLogin>} 
+            />
+            
+            {/*Freelancer Gig Management Route */}
+            <Route 
+              path="/manage-gigs" 
               element={
                 <RequireLogin>
-                  <Dashboard />
+                  {/* Passes the logged-in user's ID so they only manage their own gigs */}
+                  <GigManager ownerId={user?._id || user?.id} /> 
                 </RequireLogin>
-              }
+              } 
             />
-    
-            <Route
-              path="/income"
-              element={
-                <RequireLogin>
-                  <IncomeDashboard />
-                </RequireLogin>
-              }
-            />
+            
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

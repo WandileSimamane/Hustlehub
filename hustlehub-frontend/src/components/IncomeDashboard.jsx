@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-
+import { Link } from 'react-router-dom';
 const API = import.meta.env.VITE_API_URL || 'https://localhost:5000';
 const rand = (n) => `R${Number(n || 0).toFixed(2)}`;
 
@@ -58,10 +58,10 @@ export default function IncomeDashboard() {
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">Freelancer Dashboard</h1>
             <p className="text-gray-500 mt-1">Overview of your earnings and recent activity</p>
           </div>
-          <button className="mt-4 md:mt-0 bg-[#00cc99] hover:bg-[#00b386] text-white font-semibold py-2.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-            Create New Gig
-          </button>
+          <Link to="/gigs" className="mt-4 md:mt-0 bg-[#00cc99] hover:bg-[#00b386] text-white font-semibold py-2.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+  Create New Gig
+</Link>
         </div>
 
         {/* Top Summary Cards */}

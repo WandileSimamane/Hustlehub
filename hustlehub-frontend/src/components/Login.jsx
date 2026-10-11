@@ -7,7 +7,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = async (e) => {
+   const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
@@ -15,10 +15,19 @@ export default function Login() {
         try {
             const response = await api.post('/api/auth/login', { email, password });
             localStorage.setItem('token', response.data.token);
+            
             if (response.data.user) {
                 localStorage.setItem('user', JSON.stringify(response.data.user));
+                
+                // Route based on role
+                if (response.data.user.role === 'Client') {
+                    window.location.assign('/gigs');
+                } else {
+                    window.location.assign('/dashboard');
+                }
+            } else {
+                window.location.assign('/');
             }
-            window.location.assign('/gigs');
         } catch (err) {
             if (err.response && err.response.data.errors) {
                 setError(err.response.data.errors[0].msg);
