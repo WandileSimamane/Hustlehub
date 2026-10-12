@@ -1,3 +1,8 @@
+/* AI Declaration
+ * Date: October 11, 2026
+ * Description: Assisted with Tailwind CSS v4 configuration, debugging Vite routing and styling the glassmorphism dashboard layout.
+ * Chat Link: https://share.gemini.google/E3FLTlhfku18
+ */
 import { useEffect, useState } from 'react';
 import api from '../api';
 import { CATEGORIES, CURRENCY, decodeEntities } from '../gigUtils';
