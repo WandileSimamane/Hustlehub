@@ -1,6 +1,6 @@
-# Hustlehub+ Backend - Local Security Setup
+# Hustlehub+ 
 
-# INSY7314 - Part 1
+# INSY7314 - Part 2
 
 **Team Members**
 - Sphosethu Ximba – ST10448336
@@ -8,13 +8,22 @@
 - Wandile Simamane – ST10445696
 - Mbali Ndlovu – ST10445933
 
-This is the backend for HustleHub+, a secure freelance marketplace platform that connects clients with freelancers (also known as Hustlers), allowing them to advertise their services and clients to browse and book the services. In this part we establish security foundations such as HTTPS, password hashing, JWT, and register/login before building any marketplace features just yet.
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React (Vite) + React Router |
+| **Backend API** | Node.js + Express |
+| **Database** | MongoDB Atlas / Mongoose |
+| **Security** | JSON Web Tokens (JWT), bcrypt, OpenSSL, Express-Rate-Limit |
+| **Testing** | Postman / Newman |
 
 ## Overview
 
 Users can be divided into three categories: Hustlers, who provide services, Clients, who are looking to hire and Admins, who manage the platform. 
 
 Node.js and Express make up the stack. MongoDB will be added as we progress to other parts. To be able to develop and test the auth flow without first setting up a database, user data is currently kept within an in-memory array. Swapping in MongoDB later shouldn't involve modifying the routes or middleware because the data access is segregated into its own file.
+
 
 ## How a Request Flows Through the App
 
@@ -138,5 +147,8 @@ The server will boot securely at `https://localhost:5000`.
 **Important:** Make sure "SSL certificate verification" is toggled OFF in your Postman settings (under General) before testing the endpoints, otherwise Postman will block the self-signed certificate.
 
 ## Testing
-Endpoints were tested using Postman rather than writing automated tests for this part. The collection (Hustlehub.postman_collection.json) is included in the repo, and screenshots of each test run are attached in hustlehub-backend/assets/ST10445696 Wandile Simamane INSY7314- Part 1.docx.
+Endpoints were tested using Postman rather than writing automated tests for this part. The collection (Hustlehub Part 2.postman_collection.json) is included in the repo, and testing is demonstrated on the Youtube video.
+
+## References
+
 
