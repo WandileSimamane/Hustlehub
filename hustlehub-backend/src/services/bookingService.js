@@ -2,6 +2,7 @@ const Booking = require('../models/bookingModel');
 const Transaction = require('../models/transactionModel');
 const Gig = require('../models/gigModel');
 
+//Create a booking and a corresponding transaction
 exports.createBooking = async (gigId, clientId) => {
     const gig = await Gig.findById(gigId);
     if (!gig) {

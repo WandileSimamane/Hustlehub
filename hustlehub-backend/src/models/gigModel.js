@@ -1,8 +1,9 @@
-// src/models/gigModel.js
 const mongoose = require('mongoose');
 
+//Allowed gig categories
 const CATEGORIES = ['Design', 'Writing', 'Development', 'Marketing', 'Tutoring', 'Other'];
 
+//Schema for a gig with validated details and an owner reference
 const gigSchema = new mongoose.Schema({
     title: { type: String, required: [true, 'Title is required'], trim: true, minlength: 3, maxlength: 300 },
     description: { type: String, required: [true, 'Description is required'], trim: true, minlength: 10, maxlength: 6000 },
@@ -13,6 +14,8 @@ const gigSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const Gig = mongoose.model('Gig', gigSchema);
+
+//Expose categories on the model for use elsewhere
 Gig.CATEGORIES = CATEGORIES;
 
 module.exports = Gig;

@@ -1,8 +1,8 @@
-// services/authService.js
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
+// Registers a new user, returns 409 if the email is already taken
 exports.registerUser = async (userData) => {
     const { name, email, password, role } = userData;
 
@@ -27,6 +27,7 @@ exports.registerUser = async (userData) => {
     return { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role };
 };
 
+// Logs a user in and returns a token, returns 401 for wrong credentials
 exports.loginUser = async (email, password) => {
     const user = await User.findOne({ email });
     if (!user) {

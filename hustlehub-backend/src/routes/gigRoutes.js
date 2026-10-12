@@ -1,4 +1,3 @@
-// src/routes/gigRoutes.js
 const express = require('express');
 const router = express.Router();
 
@@ -7,10 +6,10 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/rbacMiddleware');
 const { createGigRules, updateGigRules } = require('../middleware/gigValidation');
 
-// Public: anyone can browse gigs
+//Public route to get all gigs or a specific gig by ID
 router.get('/', gigController.getGigs);
 
-// Freelancer only (must be declared before '/:id')
+//Protected routes for gig management
 router.get('/mine', verifyToken, authorizeRoles('Freelancer'), gigController.getMyGigs);
 
 router.get('/:id', gigController.getGig);
@@ -24,7 +23,7 @@ router.post(
   gigController.createGig
 );
 
-// Freelancer (own gigs) or Admin (any gig); the service decides which
+// Freelancer or Admin: update a gig
 router.put(
   '/:id',
   verifyToken,
@@ -33,7 +32,7 @@ router.put(
   gigController.updateGig
 );
 
-// Freelancer (own gigs) or Admin (any gig); the service decides which
+// Freelancer or Admin: delete a gig
 router.delete(
   '/:id',
   verifyToken,

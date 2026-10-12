@@ -1,12 +1,12 @@
-// src/middleware/gigValidation.js
 const { body } = require('express-validator');
 const Gig = require('../models/gigModel');
 const { validate } = require('./validationMiddleware');
 
 const buildRules = (isUpdate) => {
-    // on update every field is optional, on create every field is required
+    //on update every field is optional, on create every field is required
     const field = (name) => (isUpdate ? body(name).optional() : body(name));
 
+//Validation rules for creating or updating a gig
     return [
         field('title')
             .isString().withMessage('Title must be text')

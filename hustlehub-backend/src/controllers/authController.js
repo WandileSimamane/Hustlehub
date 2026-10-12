@@ -1,6 +1,6 @@
-// controllers/authController.js
 const authService = require('../services/authService');
 
+// Registers a new user, returns 409 if the email is already taken
 exports.registerUser = async (req, res, next) => {
     try {
         const user = await authService.registerUser(req.body);
@@ -17,6 +17,7 @@ exports.registerUser = async (req, res, next) => {
     }
 };
 
+// Logs a user in and returns a token, returns 401 for wrong credentials
 exports.loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;

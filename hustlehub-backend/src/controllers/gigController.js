@@ -1,4 +1,3 @@
-// src/controllers/gigController.js
 const gigService = require('../services/gigService');
 
 // Sets the status code, then passes the error to the shared errorHandler
@@ -7,6 +6,7 @@ const fail = (res, next, error) => {
     next(error);
 };
 
+// Creates a new gig owned by the logged-in user
 exports.createGig = async (req, res, next) => {
     try {
         const gig = await gigService.createGig(req.user.id, req.body);
@@ -16,6 +16,7 @@ exports.createGig = async (req, res, next) => {
     }
 };
 
+// Returns all gigs, optionally filtered by category
 exports.getGigs = async (req, res, next) => {
     try {
         const gigs = await gigService.getAllGigs({ category: req.query.category });
@@ -25,6 +26,7 @@ exports.getGigs = async (req, res, next) => {
     }
 };
 
+// Returns only the gigs owned by the logged-in user
 exports.getMyGigs = async (req, res, next) => {
     try {
         const gigs = await gigService.getGigsByOwner(req.user.id);
@@ -34,6 +36,7 @@ exports.getMyGigs = async (req, res, next) => {
     }
 };
 
+// Returns a single gig by its ID
 exports.getGig = async (req, res, next) => {
     try {
         const gig = await gigService.getGigById(req.params.id);
@@ -43,6 +46,7 @@ exports.getGig = async (req, res, next) => {
     }
 };
 
+// Updates a gig, with the service checking the user's permission
 exports.updateGig = async (req, res, next) => {
     try {
         const gig = await gigService.updateGig(req.params.id, req.user, req.body);
@@ -52,6 +56,7 @@ exports.updateGig = async (req, res, next) => {
     }
 };
 
+// Deletes a gig, with the service checking the user's permission
 exports.deleteGig = async (req, res, next) => {
     try {
         await gigService.deleteGig(req.params.id, req.user);
@@ -59,4 +64,5 @@ exports.deleteGig = async (req, res, next) => {
     } catch (error) {
         fail(res, next, error);
     }
-};
+}
+;

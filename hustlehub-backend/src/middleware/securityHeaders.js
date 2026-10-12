@@ -6,6 +6,7 @@ const allowedOrigins = [
   'http://localhost:5173', // Vite dev server
 ];
 
+//Security headers middleware using Helmet
 module.exports = helmet({
   contentSecurityPolicy: {
     useDefaults: false,

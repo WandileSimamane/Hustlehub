@@ -1,5 +1,6 @@
 const dashboardService = require('../services/dashboardService');
 
+// Wraps a service function: gets the user ID, returns its data, and handles errors
 const handle = (fn) => async (req, res) => {
   try {
     // req.user is set by verifyToken from the verified JWT payload ({ id, role })
@@ -12,6 +13,7 @@ const handle = (fn) => async (req, res) => {
   }
 };
 
+// Dashboard endpoints for income summary, transactions, and received bookings
 exports.getSummary = handle(dashboardService.getIncomeSummary);
 exports.getTransactions = handle(dashboardService.getTransactions);
 exports.getBookings = handle(dashboardService.getReceivedBookings);

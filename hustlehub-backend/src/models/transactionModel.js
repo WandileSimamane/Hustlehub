@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+//Schema for a payment record tied to a booking, client, freelancer, and gig
 const transactionSchema = new mongoose.Schema({
     booking: {
         type: mongoose.Schema.Types.ObjectId,

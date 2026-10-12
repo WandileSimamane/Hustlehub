@@ -1,5 +1,4 @@
-// src/middleware/rbacMiddleware.js
-// Must run AFTER verifyToken, because it reads req.user.role from the verified JWT.
+//Middleware factory that allows only users whose role is in the allowed list
 exports.authorizeRoles = (...allowedRoles) => (req, res, next) => {
     if (!req.user || !allowedRoles.includes(req.user.role)) {
         return res.status(403).json({

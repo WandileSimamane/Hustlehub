@@ -1,4 +1,3 @@
-// routes/authRoutes.js
 const express = require('express');
 const router = express.Router();
 
@@ -7,6 +6,7 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const { registerRules, loginRules, validate } = require('../middleware/validationMiddleware');
 const { loginLimiter } = require('../middleware/rateLimiter');
 
+//Public auth routes: register and login with rate limiting
 router.post('/register', registerRules, validate, registerUser);
 router.post('/login', loginLimiter, loginRules, validate, loginUser);
 

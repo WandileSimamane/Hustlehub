@@ -1,6 +1,6 @@
-// models/userModel.js
 const mongoose = require('mongoose');
 
+//Schema for a user account with a unique email and a role
 const userSchema = new mongoose.Schema({
     name: {
         type: String,

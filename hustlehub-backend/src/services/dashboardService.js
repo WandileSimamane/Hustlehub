@@ -38,6 +38,7 @@ exports.getIncomeSummary = async (freelancerId) => {
     { $sort: { '_id.year': 1, '_id.month': 1 } },
   ]);
 
+  
   return {
     totalIncome: totals ? totals.totalIncome : 0,
     transactionCount: totals ? totals.transactionCount : 0,
@@ -51,6 +52,7 @@ exports.getIncomeSummary = async (freelancerId) => {
   };
 };
 
+//Get all transactions for a freelancer, with client and booking details
 exports.getTransactions = (freelancerId) =>
   Transaction.find({ freelancer: toObjectId(freelancerId) })
     .populate('client', 'name')
@@ -58,6 +60,7 @@ exports.getTransactions = (freelancerId) =>
     .sort({ createdAt: -1 })
     .lean();
 
+//Get all bookings received by a freelancer, with gig and client details 
 exports.getReceivedBookings = (freelancerId) =>
   Booking.find({ freelancer: toObjectId(freelancerId) })
     .populate('gig', 'title price')
