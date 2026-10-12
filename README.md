@@ -147,7 +147,20 @@ The server will boot securely at `https://localhost:5000`.
 **Important:** Make sure "SSL certificate verification" is toggled OFF in your Postman settings (under General) before testing the endpoints, otherwise Postman will block the self-signed certificate.
 
 ## Testing
-Endpoints were tested using Postman rather than writing automated tests for this part. The collection (Hustlehub Part 2.postman_collection.json) is included in the repo, and testing is demonstrated on the Youtube video.
+
+Endpoints were initially built and verified using Postman. To ensure consistent quality and fulfill Foundation QA requirements, the entire `Hustlehub Part 2.postman_collection.json` suite was executed via the Newman CLI against the local secure server. 
+
+The test suite validates:
+*   Successful user registration (`201 Created`) and conflict handling (`409 Conflict`).
+*   Successful authentication (`200 OK`) and credential rejection (`401 Unauthorized`).
+*   Rate limiting triggers on brute-force login attempts (`429 Too Many Requests`).
+*   Role-Based Access Control (RBAC) preventing Clients from accessing Freelancer income dashboards or booking endpoints (`403 Forbidden`).
+
+### Newman Execution Evidence
+
+![Newman Test Execution Part 1](hustlehub-backend/assets/NewManTestScreenshot%201.png)
+![Newman Test Execution Part 2](hustlehub-backend/assets/NewManTestScreenshot%202.png)
+![Newman Test Summary Table](hustlehub-backend/assets/NewManTestScreenshot%203.png)
 
 ## References
 
