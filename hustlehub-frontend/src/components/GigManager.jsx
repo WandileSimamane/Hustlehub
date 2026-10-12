@@ -4,13 +4,15 @@ import { decodeEntities } from '../gigUtils';
 import GigForm from './GigForm';
 import GigFeed from './GigFeed';
 
-// Freelancer: pass ownerId to manage only their own gigs.
-// Admin: omit ownerId to manage every gig.
+// Wrapper component to handle full CRUD workflow
+// If ownerId is provided (Freelancer), limits management to their own gigs.
+// If omitted (Admin), grants global management rights.
 export default function GigManager({ ownerId }) {
   const [editing, setEditing] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState('');
 
+  // Increment key to trigger a refetch in the child GigFeed component
   const refresh = () => {
     setEditing(null);
     setRefreshKey((k) => k + 1);
@@ -18,6 +20,7 @@ export default function GigManager({ ownerId }) {
 
   const remove = async (gig) => {
     if (!window.confirm(`Delete "${decodeEntities(gig.title)}"?`)) return;
+    
     setError('');
     try {
       await api.delete(`/api/gigs/${gig._id}`);
@@ -47,6 +50,7 @@ export default function GigManager({ ownerId }) {
         </div>
       )}
 
+      {/* Re-use GigFeed but inject management controls instead of standard booking button */}
       <GigFeed
         title={ownerId ? 'My gigs' : 'All gigs'}
         ownerId={ownerId}

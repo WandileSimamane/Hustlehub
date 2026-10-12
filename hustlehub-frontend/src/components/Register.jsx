@@ -26,6 +26,8 @@ export default function Register() {
                 role
             });
             setSuccess('Registration successful! Redirecting to login...');
+            
+            // Allow user to read the success state before executing route change
             setTimeout(() => navigate('/login'), 1500);
         } catch (err) {
             const errData = err.response?.data;

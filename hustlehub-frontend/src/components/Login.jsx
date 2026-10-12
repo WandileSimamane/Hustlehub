@@ -14,12 +14,14 @@ export default function Login() {
 
         try {
             const response = await api.post('/api/auth/login', { email, password });
+            
+            // Persist session details
             localStorage.setItem('token', response.data.token);
             
             if (response.data.user) {
                 localStorage.setItem('user', JSON.stringify(response.data.user));
                 
-                // Route based on role
+                // RBAC Routing: Send users directly to the layout for their active role
                 if (response.data.user.role === 'Client') {
                     window.location.assign('/gigs');
                 } else {
@@ -29,6 +31,7 @@ export default function Login() {
                 window.location.assign('/');
             }
         } catch (err) {
+            // Surface specific validation or auth failures back to the UI
             if (err.response && err.response.data.errors) {
                 setError(err.response.data.errors[0].msg);
             } else if (err.response && err.response.data.message) {

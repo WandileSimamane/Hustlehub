@@ -1,4 +1,3 @@
-// src/components/Login.test.jsx
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import Login from './Login';

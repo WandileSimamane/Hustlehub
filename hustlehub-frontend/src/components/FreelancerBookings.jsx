@@ -10,6 +10,7 @@ export default function FreelancerBookings() {
   const fetchBookings = async () => {
     try {
       const res = await api.get('/api/bookings');
+      // Handle variable API response structures safely
       const list = Array.isArray(res.data) ? res.data : (res.data.bookings || []);
       setBookings(list);
       setError('');
@@ -27,12 +28,13 @@ export default function FreelancerBookings() {
   const handleUpdateStatus = async (bookingId, newStatus) => {
     try {
       await api.patch(`/api/bookings/${bookingId}/status`, { status: newStatus });
-      fetchBookings();
+      fetchBookings(); // Refresh the list to reflect the new status
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to update booking status');
     }
   };
 
+  // Calculate total locked-in revenue from confirmed gigs
   const income = bookings.reduce((sum, b) => {
     if (b.status === 'Confirmed') {
       return sum + Number(b.amount ?? b.gig?.price ?? 0);
@@ -86,6 +88,7 @@ export default function FreelancerBookings() {
                 Booked by <span className="font-semibold text-gray-700">{decodeEntities(b.client?.name || 'a client')}</span>
               </p>
 
+              {/* Only show action buttons if the booking hasn't been finalized yet */}
               {(!b.status || b.status === 'Pending') && (
                 <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-gray-50">
                   <button
