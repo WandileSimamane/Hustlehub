@@ -1,4 +1,8 @@
-# Hustlehub+ 
+# Hustlehub+
+
+## Demo Video
+
+[HustleHub+ Demo Video](https://www.youtube.com/watch?v=pCq2B8kiXvo)
 
 # INSY7314 - Part 2
 
@@ -18,12 +22,17 @@
 | **Security** | JSON Web Tokens (JWT), bcrypt, OpenSSL, Express-Rate-Limit |
 | **Testing** | Postman / Newman |
 
-## Overview
+## Application Features
 
-Users can be divided into three categories: Hustlers, who provide services, Clients, who are looking to hire and Admins, who manage the platform. 
+HustleHub+ is a secure, dual-sided marketplace platform connecting independent service providers (Freelancers) with customers (Clients). 
 
-Node.js and Express make up the stack. MongoDB will be added as we progress to other parts. To be able to develop and test the auth flow without first setting up a database, user data is currently kept within an in-memory array. Swapping in MongoDB later shouldn't involve modifying the routes or middleware because the data access is segregated into its own file.
+* **Role-Based Workflows:** Different dashboards and navigation links dynamically rendered based on whether the logged in user is a Client or a Freelancer.
+* **Gig Marketplace Feed:** A browsable UI where Clients can discover and search for available services offered by Freelancers.
+* **Secure Booking Engine:** Clients can request gigs. The system enforces strict separation, ensuring Freelancers cannot book their own services. 
+* **Transaction Lifecycle:** Freelancers can confirm or decline pending gig requests. Confirming a booking automatically generates an immutable financial transaction record in the database.
+* **Income Tracking:** An analytics dashboard that calculates confirmed transaction data to display a Freelancer's earned revenue.
 
+---
 
 ## How a Request Flows Through the App
 
@@ -71,11 +80,7 @@ This is enough information to identify the individual and their role. There is n
 
 ### 3. Input Validation & Error Handling
 
-Registration checks that `name`, `email`, and `password` are all present before doing anything else, and rejects duplicate emails. Both controllers wrap their logic in `try/catch` so unexpected errors ( DB issues, library errors, etc.) don't crash the process or leak internal details.
-
-Error responses are generic on purpose which are like `"Internal server error during password hashing."` rather than a stack trace or file path. That's mainly to avoid handing an attacker information about the internals of the app.
-
-This validation is still basic as it checks presence, not much else (no email format regex, no password strength rules yet). That's on the list to improve.
+Registration endpoints enforce presence checks for required fields (`name`, `email`, `password`) and reject duplicate email registrations. Controllers wrap logic in `try/catch` blocks, returning generic error messages (e.g., "Internal server error") to avoid leaking stack traces or system file paths to malicious actors.
 
 ### 4. HTTPS
 
@@ -83,69 +88,159 @@ The server runs over HTTPS using a locally generated self-signed certificate (`s
 
 This encrypts everything in transit such as  headers, the JWT and request bodies This is done so it can't be read or tampered with by something sitting on the same network. But it's important to say clearly: **a self-signed cert only works for local development.** Browsers and API clients don't trust it by default for example, Postman needs SSL verification turned off to even talk to it.
 
+### 5. Brute-Force Protection (Rate Limiting)
+The `/api/auth/login` route utilizes `express-rate-limit` to restrict users to 5 login attempts per 15-minute window. Exceeding this threshold triggers a `429 Too Many Requests` response, effectively neutralizing automated credential-stuffing attacks.
+
+
 ## Project Structure
 
-```
-hustlehub-backend/
-├── assets/
-│   └── architecture.png
-|   └──ST10445696 Wandile Simamane INSY7314- Part 1.docx
-├── certs/                      # gitignored
-│   ├── server.cert
-│   └── server.key
-├── controllers/
-│   └── authController.js
-├── middleware/
-│   └── authMiddleware.js
-├── models/
-│   └── userModel.js             # in-memory store for now
-├── routes/
-│   └── authRoutes.js
-├── .env                         # gitignored
-├── .gitignore
-├── package.json
-├── README.md
-└── server.js
-```
+```text
+emkndn-insy7314-2026-insy.../
+├── hustlehub-backend/
+│   ├── assets/                 # Architecture diagram and app screenshots
+│   ├── postman/                # Exported Postman test collections
+│   ├── src/
+│   │   ├── controllers/        # auth, booking, dashboard, and gig controllers
+│   │   ├── middleware/         # auth, RBAC, rate limiter, and validation middleware
+│   │   ├── models/             # booking, gig, transaction, and user Mongoose models
+│   │   ├── routes/             # API route definitions
+│   │   └── services/           # Business logic and service layers
+│   ├── .env                    # Backend environment variables (gitignored)
+│   ├── server.cert             # Local HTTPS certificate
+│   ├── server.key              # Local HTTPS key
+│   └── server.js               # Express application entry point
+│
+├── hustlehub-frontend/
+│   ├── public/                 # Public static assets
+│   ├── src/
+│   │   ├── assets/             # Frontend specific assets
+│   │   ├── components/         # React UI components (Dashboard, GigFeed, Auth, etc.) and CSS
+│   │   ├── api.js              # Frontend API configuration and calls
+│   │   ├── App.jsx             # Main React Router configuration
+│   │   ├── gigUtils.js         # Frontend utility functions
+│   │   ├── index.css           # Global Tailwind and base styles
+│   │   └── main.jsx            # React DOM rendering entry point
+│   ├── eslint.config.js        # Linter configuration
+│   ├── index.html              # Vite HTML template
+│   ├── package.json            # Frontend dependencies and scripts
+│   ├── tailwind.config.js      # Tailwind CSS framework configuration
+│   └── vite.config.js          # Vite build tool configuration
 
 ## API Endpoints
 
 | Method | Endpoint | Access | Description | Status Codes |
 |---|---|---|---|---|
 | `POST` | `/api/auth/register` | Public | Registers a user, hashes password | `201`, `400`, `500` |
-| `POST` | `/api/auth/login` | Public | Verifies credentials, returns JWT | `200`, `400`, `401`, `500` |
+| `POST` | `/api/auth/login` | Public | Verifies credentials, returns JWT | `200`, `400`, `401`, `429`, `500` |
 | `GET` | `/api/auth/protected-test` | Protected | Sanity check for JWT middleware | `200`, `401`, `403` |
+| `POST` | `/api/bookings` | Client only | Creates a booking (blocked for Freelancers) | `201`, `400`, `403`, `500` |
+| `GET` | `/api/bookings` | Protected | Fetches bookings based on user role | `200`, `401`, `500` |
+| `PUT` | `/api/bookings/:id` | Freelancer only | Confirms booking, generates transaction | `200`, `400`, `403`, `404`, `500` |
 
-## Setup
+## Setup & Installation
 
-**Prerequisites:** Node 18+, npm 9+, OpenSSL.
+### 1. Backend Setup
+
+Open a terminal and navigate to the backend directory:
 
 ```bash
-git clone https://github.com/EMKNDN/emkndn-insy7314-2026-insy7314-poe-wandilesimamane.git
-cd emkndn-insy7314-2026-insy7314-poe-wandilesimamane
+cd hustlehub-backend
 npm install
 ```
 
-To run the secure authentication flow locally, you must configure your own environment variables and generate a local SSL certificate. 
-
-Open Gitbash terminal to run and ensure the files under the hustlehub-backend folder:
+**Generate the SSL certificate.** Run this in the root of the backend folder to create the HTTPS keys:
 
 ```bash
 openssl req -nodes -new -x509 -keyout server.key -out server.cert -days 365 -subj "/CN=localhost"
 ```
 
-cd Create a `.env` file under the hustlehub-backend folder :
+**Configure environment variables.** Create a `.env` file in the `hustlehub-backend` folder:
 
-```
+```env
 PORT=5000
 JWT_SECRET=super_secret_hustlehub_development_key_2026
+MONGODB_URI=mongodb://127.0.0.1:27017/hustlehub
 ```
 
+**Start the backend server:**
 
-    
-The server will boot securely at `https://localhost:5000`. 
-**Important:** Make sure "SSL certificate verification" is toggled OFF in your Postman settings (under General) before testing the endpoints, otherwise Postman will block the self-signed certificate.
+```bash
+npm run dev
+```
 
+The API will boot securely at `https://localhost:5000`.
+
+### 2. Frontend Setup
+
+Open a new, separate terminal and navigate to the frontend directory:
+
+```bash
+cd hustlehub-frontend
+npm install
+```
+
+**Configure frontend environment.** If your Vite React app requires the API URL to be set explicitly, create a `.env` file in the `hustlehub-frontend` folder:
+
+```env
+VITE_API_URL=https://localhost:5000
+```
+
+**Start the React development server:**
+
+```bash
+npm run dev
+```
+
+The frontend will boot at `http://localhost:5173` (or the port specified by Vite).
+
+---
+
+---
+
+## Application Gallery
+
+### User Interface (Frontend)
+Here are visual previews of the HustleHub+ application running locally:
+
+**Authentication:**
+* **Login Page:** ![Login Page](hustlehub-backend/assets/Login_Page.png)
+* **Register Page:** ![Register Page](hustlehub-backend/assets/Register_Page.png)
+
+**Client View:**
+* **Client Dashboard:** ![Client Dashboard](hustlehub-backend/assets/dashboard_client.png)
+* **Client Bookings:** ![Client Bookings](hustlehub-backend/assets/bookings_client.png)
+* **Manage Bookings:** ![Manage Bookings](hustlehub-backend/assets/Manage_bookings_client.png)
+* **Manage Gigs:** ![Manage Gigs](hustlehub-backend/assets/manage_gig_client.png)
+* **Edit Gigs:** ![Edit Gigs](hustlehub-backend/assets/Edit_gigs_client.png)
+
+**Freelancer View:**
+* **Freelancer Dashboard:** ![Freelancer Dashboard](hustlehub-backend/assets/freelancer_dashboard.png)
+* **Freelancer Income:** ![Freelancer Income](hustlehub-backend/assets/freelancer_income.png)
+
+## Testing Procedures
+
+The system is validated through a combination of automated API tests and manual end-to-end UI workflows.
+
+### 1. API Testing (Postman / Newman)
+
+The backend routes, security middleware, and database operations are tested using Postman.
+
+- **Collection location:** The exported test suite is located at `hustlehub-backend/postman/Hustlehub.postman_collection.json`.
+- **Important requirement:** Because the backend uses local HTTPS, you must turn off SSL verification in Postman (**Settings > General > SSL certificate verification: OFF**).
+- **Execution:** Import the collection into Postman and click **Run Collection**. The tests verify:
+  - `201 Created` for successful bookings
+  - `403 Forbidden` for RBAC violations (e.g., a Freelancer attempting to book a gig)
+  - `429 Too Many Requests` when the rate limiter is triggered
+
+### 2. End-to-End UI Testing
+
+To verify the full MERN stack integration, perform the following manual workflow in the browser:
+
+1. Navigate to the React frontend at `http://localhost:5173`.
+2. **Authentication:** Register two new accounts, one with the `Client` role and one with the `Freelancer` role.
+3. **Gig creation:** Log in as the Freelancer and create a test gig. Log out.
+4. **RBAC & booking:** Log in as the Client. Verify that the Gig Feed renders the Freelancer's service. Click the **Book** button to initiate a request.
+5. **Transaction verification:** Log back in as the Freelancer. Navigate to the bookings view, confirm the Client's pending request, and check the Income Dashboard/Database to verify the corresponding financial transaction was generated.
 ## Testing
 
 Endpoints were initially built and verified using Postman. To ensure consistent quality and fulfill Foundation QA requirements, the entire `Hustlehub Part 2.postman_collection.json` suite was executed via the Newman CLI against the local secure server. 
@@ -164,4 +259,17 @@ The test suite validates:
 
 ## References
 
+### AI Declaration
 
+- **Date:** October 11, 2026
+- **Description:** Assisted with Tailwind CSS v4 configuration, debugging Vite routing and styling the glassmorphism dashboard layout.
+- **Chat Link:** [https://share.gemini.google/E3FLTlhfku18](https://share.gemini.google/E3FLTlhfku18)
+
+### Code References
+
+**Express Rate Limit Configuration**
+
+- **Author:** badamZA
+- **Date:** Aug 12, 2026
+- **Availability:** [https://github.com/INSY7314-2026-EMDBN/Hello-INSY7314/tree/main/09%20-%20Rate%20Limiting](https://github.com/INSY7314-2026-EMDBN/Hello-INSY7314/tree/main/09%20-%20Rate%20Limiting)
+- **Accessed:** October 8, 2026
