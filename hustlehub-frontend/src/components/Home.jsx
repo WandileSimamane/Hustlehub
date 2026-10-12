@@ -4,11 +4,12 @@ export default function Home() {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-
+  // Immediately redirect authenticated users to their correct initial landing view
   if (token) {
     if (user.role === 'Client') return <Navigate to="/gigs" replace />;
     return <Navigate to="/dashboard" replace />;
   }
+  
   return (
     <section className="relative overflow-hidden bg-white rounded-3xl shadow-xl border border-gray-100 p-10 sm:p-20 text-center mt-10">
       <div className="absolute inset-0 bg-gradient-to-br from-[#393bc6]/5 to-[#00cc99]/5 z-0" />

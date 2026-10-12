@@ -1,4 +1,3 @@
-// src/components/Gig.test.jsx
 import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -6,6 +5,7 @@ import api from '../api';
 import GigFeed from './GigFeed';
 import GigForm from './GigForm';
 
+// Stub out API calls to prevent real network requests during tests
 vi.mock('../api', () => ({
   default: { get: vi.fn(), post: vi.fn() },
 }));

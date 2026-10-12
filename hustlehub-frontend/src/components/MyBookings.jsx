@@ -9,8 +9,7 @@ export default function MyBookings() {
 
   useEffect(() => {
     let cancelled = false;
-
-    // Calls the endpoint to get the logged-in user's bookings
+    
     api.get('/api/bookings')
       .then((res) => {
         if (!cancelled) {

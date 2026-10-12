@@ -20,6 +20,7 @@ export default function IncomeDashboard() {
       return (await res.json()).data;
     };
 
+    // Gather summary, transactions, and bookings synchronously
     Promise.all([get('summary'), get('transactions'), get('bookings')])
       .then(([s, t, b]) => {
         setSummary(s);
@@ -52,23 +53,20 @@ export default function IncomeDashboard() {
     <div className="min-h-screen bg-transparent p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto">
         
-        {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">Freelancer Dashboard</h1>
             <p className="text-gray-500 mt-1">Overview of your earnings and recent activity</p>
           </div>
-          <Link to="/gigs" className="mt-4 md:mt-0 bg-[#00cc99] hover:bg-[#00b386] text-white font-semibold py-2.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-  Create New Gig
-</Link>
+          <Link to="/manage-gigs" className="mt-4 md:mt-0 bg-[#00cc99] hover:bg-[#00b386] text-white font-semibold py-2.5 px-6 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+            Create New Gig
+          </Link>
         </div>
 
-        {/* Top Summary Cards */}
         <section aria-label="Total earnings" className="mb-10">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Primary Stat Card (Glassmorphism inspired) */}
             <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
               <div className="flex items-start justify-between relative z-10">
                 <div>
@@ -86,31 +84,26 @@ export default function IncomeDashboard() {
                   <small className="block mt-2 text-gray-500 font-medium">{summary.transactionCount} successful transaction(s)</small>
                 </div>
                 
-                {/* Decorative Icon */}
                 <div className="bg-[#393bc6]/10 p-4 rounded-xl text-[#393bc6]">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
               </div>
             </div>
 
-            {/* Promotional / Call to Action Card */}
             <div className="bg-gradient-to-br from-[#393bc6] to-[#2e30a8] rounded-2xl shadow-lg p-8 text-white relative overflow-hidden flex flex-col justify-center">
               <h3 className="text-2xl font-bold mb-2 z-10">Get premium account!</h3>
               <p className="text-indigo-200 text-sm mb-6 max-w-[200px] z-10">Optimize your selling product and enjoy the advantage of premium.</p>
               <button className="bg-white text-[#393bc6] hover:bg-gray-50 font-bold py-2.5 px-6 rounded-lg self-start transition-colors shadow-sm z-10">
                 Get Premium
               </button>
-              {/* Decorative Circles */}
               <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-[#ff355e] rounded-full opacity-90"></div>
               <div className="absolute top-10 -right-10 w-24 h-24 bg-[#00cc99] rounded-full opacity-90 blur-xl"></div>
             </div>
           </div>
         </section>
 
-        {/* Tables Section */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           
-          {/* Bookings Table */}
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <div>
@@ -160,7 +153,6 @@ export default function IncomeDashboard() {
             </div>
           </div>
 
-          {/* Transactions Table */}
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <div>

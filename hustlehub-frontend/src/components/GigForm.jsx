@@ -10,6 +10,7 @@ const emptyForm = {
   deliveryDays: '',
 };
 
+// Normalize API error responses into an array of strings
 function readErrors(err) {
   const { status, data } = err.response || {};
   if (!status) return ['Cannot reach the server. Check your connection and try again.'];
@@ -46,6 +47,7 @@ export default function GigForm({ gig, onCreated, onCancel }) {
     setErrors([]);
     setSuccess('');
 
+    // Pre-flight client-side validation to catch bad input early
     const problems = [];
     const days = Number(form.deliveryDays);
     if (form.title.trim().length < 3) problems.push('Title must be at least 3 characters.');
@@ -54,6 +56,7 @@ export default function GigForm({ gig, onCreated, onCancel }) {
     if (!Number.isInteger(days) || days < 1 || days > 90) {
       problems.push('Delivery time must be a whole number from 1 to 90 days.');
     }
+    
     if (problems.length > 0) {
       setErrors(problems);
       return;
@@ -69,9 +72,11 @@ export default function GigForm({ gig, onCreated, onCancel }) {
 
     setSubmitting(true);
     try {
+      // Toggle between update and create based on component props
       const res = isEdit
         ? await api.put(`/api/gigs/${gig._id}`, payload)
         : await api.post('/api/gigs', payload);
+        
       setSuccess(isEdit ? 'Gig updated.' : 'Gig created.');
       if (!isEdit) setForm(emptyForm);
       if (onCreated) onCreated(res.data.gig);

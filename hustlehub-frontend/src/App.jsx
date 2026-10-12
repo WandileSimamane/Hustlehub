@@ -17,6 +17,7 @@ export function getUser() {
   }
 }
 
+// Higher Order Component to enforce authenticated access
 function RequireLogin({ children }) {
   if (!getUser() || !localStorage.getItem('token')) return <Navigate to="/login" replace />;
   return children;
@@ -46,6 +47,8 @@ function Nav() {
             <NavLink to="/" className="flex items-center text-2xl font-black text-[#393bc6] tracking-tight" end>
               HustleHub<span className="text-[#ff355e]">+</span>
             </NavLink>
+            
+            {/* Render navigation links based on explicit RBAC user roles */}
             {user && (
               <div className="hidden sm:flex sm:space-x-8">
                 {user.role === 'Client' && (
@@ -60,7 +63,7 @@ function Nav() {
                     <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
                     <NavLink to="/income" className={navLinkClass}>Income</NavLink>
                     <NavLink to="/manage-gigs" className={navLinkClass}>Manage Gigs</NavLink>
-                    <NavLink to="/manage-bookings" className={navLinkClass}>Manage Bookings</NavLink> {/* NEW */}
+                    <NavLink to="/manage-bookings" className={navLinkClass}>Manage Bookings</NavLink>
                   </>
                 )}
               </div>
@@ -116,17 +119,11 @@ function App() {
             <Route path="/dashboard" element={<RequireLogin><Dashboard /></RequireLogin>} />
             <Route path="/income" element={<RequireLogin><IncomeDashboard /></RequireLogin>} />
             <Route 
-              path="/manage-gigs" 
-              element={<RequireLogin><GigManager ownerId={user?._id || user?.id} /></RequireLogin>} 
-            />
-            
-            {/*Freelancer Booking Management Route */}
-            <Route 
               path="/manage-bookings" 
               element={<RequireLogin><FreelancerBookings /></RequireLogin>} 
             />
             
-            {/*Freelancer Gig Management Route */}
+            {/* Freelancer Gig Management Route */}
             <Route 
               path="/manage-gigs" 
               element={
@@ -137,6 +134,7 @@ function App() {
               } 
             />
             
+            {/* Fallback boundary */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

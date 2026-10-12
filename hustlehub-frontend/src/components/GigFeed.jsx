@@ -13,11 +13,13 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
   useEffect(() => {
     let cancelled = false;
 
+    // Fetch gigs, applying category filter directly to the API request if present
     api
       .get('/api/gigs', { params: category ? { category } : {} })
       .then((res) => {
         if (cancelled) return;
         let list = res.data.gigs || [];
+        // Optional client-side filter to only show gigs for a specific freelancer
         if (ownerId) list = list.filter((g) => (g.owner?._id || g.owner) === ownerId);
         setGigs(list);
         setError('');
@@ -54,6 +56,7 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
     }
   };
 
+  // Live client-side search filtering
   const filteredGigs = gigs.filter(gig => 
     gig.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     gig.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -67,7 +70,6 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
         </h2>
 
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-          {/* Search Bar */}
           <div className="relative w-full sm:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +85,6 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
             />
           </div>
 
-          {/* Pill Filters */}
           <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
             <button
               onClick={() => handleCategoryChange('')}
@@ -108,7 +109,6 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
         </div>
       </div>
 
-      {/* Toast Notification */}
       {bookingMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#00cc99] text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
@@ -153,10 +153,10 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
               </span>
             </div>
             
+            {/* Sanitize entities to prevent escaped HTML rendering issues */}
             <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
               {decodeEntities(gig.title)}
             </h3>
-            
             <p className="text-gray-500 text-sm mb-6 flex-grow line-clamp-3">
               {decodeEntities(gig.description)}
             </p>
@@ -174,6 +174,7 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
               </div>
             </div>
 
+            {/* Injected action block allows parent components to override the default "Book" button */}
             {renderActions ? (
               renderActions(gig)
             ) : (

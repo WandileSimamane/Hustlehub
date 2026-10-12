@@ -20,6 +20,7 @@ export default function Dashboard() {
       return (await res.json()).data;
     };
 
+    // Fetch all dashboard metrics concurrently to avoid waterfall delays
     Promise.all([get('summary'), get('transactions'), get('bookings')])
       .then(([s, t, b]) => {
         setSummary(s);
@@ -83,6 +84,7 @@ export default function Dashboard() {
                         <td className="p-4 font-medium text-gray-900">{b.gig?.title}</td>
                         <td className="p-4 text-gray-600">{b.client?.name}</td>
                         <td className="p-4">
+                          {/* Color code status pills */}
                           <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
                             b.status === 'Confirmed' ? 'bg-green-100 text-green-700' :
                             b.status === 'Declined' ? 'bg-red-100 text-red-700' :
