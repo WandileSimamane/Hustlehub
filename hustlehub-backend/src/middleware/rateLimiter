@@ -1,3 +1,11 @@
+/*
+ * Title: Express Rate Limit Configuration
+ * Author: badamZA
+ * Date: Aug 12, 2026
+ * Availability: https://github.com/INSY7314-2026-EMDBN/Hello-INSY7314/tree/main/09%20-%20Rate%20Limiting
+ * Accessed: October 8, 2026
+ */
+
 const rateLimit = require('express-rate-limit');
 
 // Strict limit for login (prevents brute-force password guessing)
