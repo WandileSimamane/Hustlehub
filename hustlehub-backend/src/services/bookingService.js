@@ -9,26 +9,47 @@ exports.createBooking = async (gigId, clientId) => {
         throw new Error('Gig not found');
     }
 
-    if (gig.owner.toString() === clientId.toString()) {
+    const freelancerId = gig.owner || gig.freelancer || gig.user;
+    if (freelancerId.toString() === clientId.toString()) {
         throw new Error('You cannot book your own gig');
     }
 
     const newBooking = new Booking({
         gig: gig._id,
         client: clientId,
-        freelancer: gig.owner, 
-        status: 'Confirmed'    
-    });
-    
-    const newTransaction = new Transaction({
-        client: clientId,
-        freelancer: gig.owner,
-        gig: gig._id,
-        amount: gig.price    
+        freelancer: freelancerId, 
+        status: 'Pending',
+        paymentStatus: 'Unpaid'
     });
 
     await newBooking.save();
-    await newTransaction.save();
 
-    return { booking: newBooking, transaction: newTransaction };
+    return { booking: newBooking };
+};
+
+exports.processMockPayment = async (bookingId, clientId, paymentDetails = {}) => {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+        throw new Error('Booking not found');
+    }
+
+    if (booking.client.toString() !== clientId.toString()) {
+        throw new Error('You can only pay for your own bookings');
+    }
+
+    if (booking.paymentStatus === 'Paid') {
+        throw new Error('Booking is already paid');
+    }
+
+    const rawDigits = String(paymentDetails.cardNumber || '').replace(/\D/g, '');
+    if (rawDigits.length < 12) {
+        throw new Error('Invalid card number');
+    }
+
+    booking.paymentStatus = 'Paid';
+    booking.paymentReference = `PAY-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    booking.paidAt = new Date();
+    await booking.save();
+
+    return booking;
 };
