@@ -14,6 +14,13 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [bookingMessage, setBookingMessage] = useState('');
+  const [checkoutData, setCheckoutData] = useState(null);
+  const [cardHolder, setCardHolder] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [paymentError, setPaymentError] = useState('');
+  const [processingPayment, setProcessingPayment] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,16 +55,45 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
     setCategory(catName);
   };
 
-  const handleBookGig = async (gigId) => {
+  const handleBookGig = async (gig) => {
     try {
       setBookingMessage('');
-      const response = await api.post('/api/bookings', { gigId });
+      const response = await api.post('/api/bookings', { gigId: gig._id });
+      const createdBooking = response.data.booking;
 
-      setBookingMessage(response.data.message || 'Gig successfully booked! Status is pending.');
-      setTimeout(() => setBookingMessage(''), 4000);
+      setCheckoutData({ booking: createdBooking, gig });
+      setCardHolder('');
+      setCardNumber('');
+      setExpiry('');
+      setCvv('');
+      setPaymentError('');
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || 'Server error creating booking');
+    }
+  };
+
+  const handleMockPaymentSubmit = async (e) => {
+    e.preventDefault();
+    if (!checkoutData?.booking?._id) return;
+
+    try {
+      setProcessingPayment(true);
+      setPaymentError('');
+      const res = await api.post(`/api/bookings/${checkoutData.booking._id}/pay`, {
+        cardHolder,
+        cardNumber,
+        expiry,
+        cvv
+      });
+
+      setCheckoutData(null);
+      setBookingMessage(res.data.message || 'Payment completed! Funds held in escrow until freelancer confirms.');
+      setTimeout(() => setBookingMessage(''), 5000);
+    } catch (err) {
+      setPaymentError(err.response?.data?.message || 'Payment failed. Check your card details.');
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
@@ -118,6 +154,119 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
         <div className="fixed bottom-6 right-6 z-50 bg-[#00cc99] text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
           <p className="font-semibold">{bookingMessage}</p>
+        </div>
+      )}
+
+      {checkoutData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-black text-gray-900">HustleHub+ Escrow Checkout</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setCheckoutData(null);
+                  setBookingMessage('Booking saved as Unpaid. You can complete payment in My Bookings.');
+                  setTimeout(() => setBookingMessage(''), 4000);
+                }}
+                className="text-gray-400 hover:text-gray-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-xl mb-4 border border-gray-100">
+              <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">Gig Summary</p>
+              <p className="font-bold text-gray-900">{decodeEntities(checkoutData.gig.title)}</p>
+              <p className="text-2xl font-black text-[#393bc6] mt-1">
+                {CURRENCY}{checkoutData.gig.price}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Payment is held securely in escrow until the freelancer confirms your booking.
+              </p>
+            </div>
+
+            {paymentError && (
+              <div className="bg-red-50 text-[#ff355e] p-3 rounded-xl text-sm font-medium mb-4 border border-red-100">
+                {paymentError}
+              </div>
+            )}
+
+            <form onSubmit={handleMockPaymentSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-600 mb-1">Cardholder Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="W. Simamane"
+                  value={cardHolder}
+                  onChange={(e) => setCardHolder(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#393bc6]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-600 mb-1">Card Number (16 Digits)</label>
+                <input
+                  type="text"
+                  required
+                  maxLength="19"
+                  placeholder="4532 0151 1283 0366"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#393bc6]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-600 mb-1">Expiry Date</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="MM/YY"
+                    maxLength="5"
+                    value={expiry}
+                    onChange={(e) => setExpiry(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#393bc6]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-600 mb-1">CVV</label>
+                  <input
+                    type="password"
+                    required
+                    maxLength="4"
+                    placeholder="123"
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#393bc6]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCheckoutData(null);
+                    setBookingMessage('Booking saved as Unpaid. You can pay later in My Bookings.');
+                    setTimeout(() => setBookingMessage(''), 4000);
+                  }}
+                  className="w-1/3 py-3 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Pay Later
+                </button>
+                <button
+                  type="submit"
+                  disabled={processingPayment}
+                  className="w-2/3 py-3 bg-[#00cc99] hover:bg-[#00b386] text-white font-bold rounded-xl shadow-md transition-colors disabled:opacity-50"
+                >
+                  {processingPayment ? 'Processing...' : `Pay ${CURRENCY}${checkoutData.gig.price}`}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -184,7 +333,7 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
               renderActions(gig)
             ) : (
               <button 
-                onClick={() => handleBookGig(gig._id)}
+                onClick={() => handleBookGig(gig)}
                 className="w-full py-3 bg-[#393bc6] hover:bg-[#2e30a8] text-white font-semibold rounded-xl transition-colors duration-200 shadow-md group-hover:shadow-lg flex justify-center items-center gap-2"
               >
                 Book this gig
