@@ -25,6 +25,10 @@ const transactionSchema = new mongoose.Schema({
     amount: {
         type: Number,
         required: true
+    },
+    paymentReference: {
+        type: String,
+        default: null
     }
 }, { timestamps: true });
 
