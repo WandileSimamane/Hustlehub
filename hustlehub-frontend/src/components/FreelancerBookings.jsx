@@ -36,7 +36,7 @@ export default function FreelancerBookings() {
 
   // Calculate total locked-in revenue from confirmed gigs
   const income = bookings.reduce((sum, b) => {
-    if (b.status === 'Confirmed') {
+    if (b.status === 'Confirmed' && b.paymentStatus === 'Paid') {
       return sum + Number(b.amount ?? b.gig?.price ?? 0);
     }
     return sum;
@@ -71,30 +71,46 @@ export default function FreelancerBookings() {
           {bookings.map((b) => (
             <div key={b._id} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col">
               <div className="flex justify-between items-start mb-3">
-                <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${
-                  b.status === 'Confirmed' ? 'bg-[#00cc99]/10 text-[#00cc99]' : 
-                  b.status === 'Declined' ? 'bg-[#ff355e]/10 text-[#ff355e]' : 
-                  'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {b.status || 'Pending'}
-                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${
+                    b.status === 'Confirmed' ? 'bg-[#00cc99]/10 text-[#00cc99]' : 
+                    b.status === 'Declined' ? 'bg-[#ff355e]/10 text-[#ff355e]' : 
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {b.status || 'Pending'}
+                  </span>
+                  <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${
+                    b.paymentStatus === 'Paid' ? 'bg-blue-50 text-[#393bc6]' : 
+                    b.paymentStatus === 'Refunded' ? 'bg-gray-100 text-gray-600' : 
+                    'bg-orange-50 text-orange-600'
+                  }`}>
+                    {b.paymentStatus === 'Paid' ? 'Paid (Escrow)' : (b.paymentStatus || 'Unpaid')}
+                  </span>
+                </div>
                 <span className="font-black text-lg text-[#393bc6]">
                   {CURRENCY}{b.amount ?? b.gig?.price}
                 </span>
               </div>
               
               <h3 className="font-bold text-gray-900 mb-1 line-clamp-1">{decodeEntities(b.gig?.title || 'Gig')}</h3>
-              <p className="text-sm text-gray-500 mb-6 flex-grow">
+              <p className="text-sm text-gray-500 mb-4 flex-grow">
                 Booked by <span className="font-semibold text-gray-700">{decodeEntities(b.client?.name || 'a client')}</span>
               </p>
+
+              {b.paymentStatus !== 'Paid' && (!b.status || b.status === 'Pending') && (
+                <p className="text-xs font-medium text-orange-600 bg-orange-50 px-3 py-2 rounded-lg mb-4">
+                  Awaiting client payment before you can confirm this booking.
+                </p>
+              )}
 
               {/* Only show action buttons if the booking hasn't been finalized yet */}
               {(!b.status || b.status === 'Pending') && (
                 <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-gray-50">
                   <button
                     type="button"
+                    disabled={b.paymentStatus !== 'Paid'}
                     onClick={() => handleUpdateStatus(b._id, 'Confirmed')}
-                    className="py-2.5 bg-[#00cc99] hover:bg-[#00b386] text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
+                    className="py-2.5 bg-[#00cc99] hover:bg-[#00b386] text-white text-sm font-bold rounded-xl transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Confirm
                   </button>
