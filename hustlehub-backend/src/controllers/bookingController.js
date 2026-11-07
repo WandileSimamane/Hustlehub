@@ -19,15 +19,62 @@ exports.createBooking = async (req, res, next) => {
             return res.status(400).json({ message: 'This gig has no assigned freelancer/owner' });
         }
 
+        if (String(freelancerId) === String(clientId)) {
+            return res.status(400).json({ message: 'You cannot book your own gig' });
+        }
+
         const booking = await Booking.create({
             gig: gigId,
             client: clientId,
             freelancer: freelancerId,
-            status: 'Pending'
+            status: 'Pending',
+            paymentStatus: 'Unpaid'
         });
 
         res.status(201).json({
-            message: 'Booking created successfully',
+            message: 'Booking created! Proceed to payment to secure your booking.',
+            booking
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.payForBooking = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { cardHolder, cardNumber, expiry, cvv } = req.body;
+        const userId = req.user.id || req.user._id;
+
+        const booking = await Booking.findById(id).populate('gig');
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        if (booking.client.toString() !== String(userId)) {
+            return res.status(403).json({ message: 'You can only pay for your own bookings' });
+        }
+
+        if (booking.status === 'Declined') {
+            return res.status(400).json({ message: 'Cannot pay for a declined booking' });
+        }
+
+        if (booking.paymentStatus === 'Paid') {
+            return res.status(400).json({ message: 'This booking has already been paid for' });
+        }
+
+        const cleanCardNumber = String(cardNumber || '').replace(/\s+/g, '');
+        if (!cardHolder || !/^\d{13,19}$/.test(cleanCardNumber) || !expiry || !/^\d{3,4}$/.test(String(cvv || ''))) {
+            return res.status(400).json({ message: 'Please provide valid mock payment card details' });
+        }
+
+        booking.paymentStatus = 'Paid';
+        booking.paymentReference = `HH-PAY-${Date.now().toString().slice(-6)}`;
+        booking.paidAt = new Date();
+        await booking.save();
+
+        res.status(200).json({
+            message: 'Payment successful! Funds are held in escrow until the freelancer confirms.',
             booking
         });
     } catch (error) {
@@ -51,7 +98,8 @@ exports.getBookings = async (req, res, next) => {
         const bookings = await Booking.find(query)
             .populate('gig')
             .populate('client', 'name email')
-            .populate('freelancer', 'name email');
+            .populate('freelancer', 'name email')
+            .sort({ createdAt: -1 });
 
         res.status(200).json(bookings);
     } catch (error) {
@@ -80,10 +128,14 @@ exports.updateBookingStatus = async (req, res, next) => {
             return res.status(403).json({ message: 'You can only update your own bookings' });
         }
 
+        if (status === 'Confirmed' && booking.paymentStatus !== 'Paid') {
+            return res.status(400).json({ message: 'Cannot confirm booking until the client completes payment' });
+        }
+
         booking.status = status;
-        await booking.save();
 
         if (status === 'Confirmed') {
+            await booking.save();
             // Create the transaction once per booking (guards against double clicks)
             const existing = await Transaction.findOne({ booking: booking._id });
             if (!existing) {
@@ -93,10 +145,15 @@ exports.updateBookingStatus = async (req, res, next) => {
                     client: booking.client,
                     freelancer: booking.freelancer,
                     gig: booking.gig,
-                    amount: gig ? gig.price || 0 : 0
+                    amount: gig ? gig.price || 0 : 0,
+                    paymentReference: booking.paymentReference
                 });
             }
         } else {
+            if (booking.paymentStatus === 'Paid') {
+                booking.paymentStatus = 'Refunded';
+            }
+            await booking.save();
             // Declined: make sure no income is recorded for this booking
             await Transaction.deleteOne({ booking: booking._id });
         }
