@@ -56,13 +56,17 @@ exports.updateGig = async (req, res, next) => {
     }
 };
 
-// Deletes a gig, with the service checking the user's permission
+// Toggles a gig between published and unpublished, with the service checking permission
 exports.deleteGig = async (req, res, next) => {
     try {
-        await gigService.deleteGig(req.params.id, req.user);
-        return res.status(200).json({ success: true, message: 'Gig deleted successfully.' });
+        const gig = await gigService.unpublishGig(req.params.id, req.user);
+        return res.status(200).json({ 
+            success: true, 
+            message: `Gig successfully ${gig.status}`,
+            gig 
+        });
     } catch (error) {
         fail(res, next, error);
     }
-}
+};
 ;
