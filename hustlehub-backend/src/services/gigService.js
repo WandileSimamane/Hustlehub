@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Gig = require('../models/gigModel');
 
 // Only these fields can be set by a client (blocks mass assignment, e.g. sending "owner")
+// "status" is intentionally excluded here so it can only be changed via the explicit unpublish route
 const ALLOWED_FIELDS = ['title', 'description', 'category', 'price', 'deliveryDays'];
 
 const httpError = (statusCode, message) => {
@@ -22,11 +23,12 @@ const assertValidId = (id) => {
 
 exports.createGig = async (ownerId, data) => {
     // owner always comes from the verified JWT, never from the request body
-    return Gig.create({ ...pickFields(data), owner: ownerId });
+    return Gig.create({ ...pickFields(data), owner: ownerId, status: 'published' });
 };
 
 exports.getAllGigs = async ({ category } = {}) => {
-    const filter = {};
+    // Force the public feed to only show published gigs
+    const filter = { status: 'published' };
     if (typeof category === 'string' && Gig.CATEGORIES.includes(category)) {
         filter.category = category;
     }
@@ -35,6 +37,7 @@ exports.getAllGigs = async ({ category } = {}) => {
 };
 
 exports.getGigsByOwner = async (ownerId) => {
+    // Freelancers still need to see ALL their gigs (published and unpublished) in their manager view
     return Gig.find({ owner: ownerId }).sort({ createdAt: -1 });
 };
 
@@ -63,17 +66,22 @@ exports.updateGig = async (id, user, data) => {
     return gig;
 };
 
-exports.deleteGig = async (id, user) => {
+// Renamed from deleteGig to unpublishGig for clarity
+exports.unpublishGig = async (id, user) => {
     assertValidId(id);
     const gig = await Gig.findById(id);
     if (!gig) throw httpError(404, 'Gig not found.');
 
-    // Owner can delete their own gig; Admin can delete any gig
+    // Owner can toggle their own gig; Admin can toggle any gig
     const isOwner = gig.owner.toString() === user.id;
     const isAdmin = user.role === 'Admin';
     if (!isOwner && !isAdmin) {
-        throw httpError(403, 'You can only delete your own gigs.');
+        throw httpError(403, 'You can only unpublish your own gigs.');
     }
 
-    await gig.deleteOne();
+    // Toggle the status instead of deleting the document
+    gig.status = gig.status === 'published' ? 'unpublished' : 'published';
+    await gig.save();
+    
+    return gig;
 };

@@ -23,23 +23,6 @@ export default function GigManager({ ownerId }) {
     setRefreshKey((k) => k + 1);
   };
 
-  const remove = async (gig) => {
-    if (!window.confirm(`Delete "${decodeEntities(gig.title)}"?`)) return;
-    
-    setError('');
-    try {
-      await api.delete(`/api/gigs/${gig._id}`);
-      refresh();
-    } catch (err) {
-      const { status, data } = err.response || {};
-      setError(
-        status === 403
-          ? 'You are not allowed to delete this gig.'
-          : data?.message || 'Could not delete the gig.'
-      );
-    }
-  };
-
   return (
     <>
       <GigForm
@@ -74,10 +57,22 @@ export default function GigManager({ ownerId }) {
             </button>
             <button 
               type="button" 
-              className="py-2.5 bg-white border-2 border-[#ff355e] text-[#ff355e] hover:bg-[#ff355e] hover:text-white text-sm font-bold rounded-xl transition-colors" 
-              onClick={() => remove(gig)}
+              className={`py-2.5 border-2 text-sm font-bold rounded-xl transition-colors ${
+                gig.status === 'unpublished' 
+                  ? 'bg-[#00cc99]/10 border-[#00cc99] text-[#00cc99] hover:bg-[#00cc99] hover:text-white'
+                  : 'bg-white border-[#ff355e] text-[#ff355e] hover:bg-[#ff355e] hover:text-white'
+              }`} 
+              onClick={async () => {
+                if (!window.confirm(`${gig.status === 'unpublished' ? 'Publish' : 'Unpublish'} "${decodeEntities(gig.title)}"?`)) return;
+                try {
+                  await api.delete(`/api/gigs/${gig._id}`);
+                  refresh();
+                } catch (err) {
+                  setError(err.response?.data?.message || 'Could not update gig status.');
+                }
+              }}
             >
-              Delete
+              {gig.status === 'unpublished' ? 'Publish' : 'Unpublish'}
             </button>
           </div>
         )}
