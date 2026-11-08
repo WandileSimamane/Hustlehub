@@ -299,9 +299,16 @@ export default function GigFeed({ title = 'Browse gigs', ownerId, renderActions,
             className="group bg-white/70 backdrop-blur-lg border border-gray-100 rounded-2xl p-6 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 flex flex-col"
           >
             <div className="flex justify-between items-start mb-4">
-              <span className="inline-block px-3 py-1 bg-[#00cc99]/10 text-[#00cc99] text-xs font-bold rounded-full uppercase tracking-wider">
-                {gig.category}
-              </span>
+              <div className="flex gap-2">
+                <span className="inline-block px-3 py-1 bg-[#00cc99]/10 text-[#00cc99] text-xs font-bold rounded-full uppercase tracking-wider">
+                  {gig.category}
+                </span>
+                {gig.status === 'unpublished' && (
+                  <span className="inline-block px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-full uppercase tracking-wider">
+                    Draft
+                  </span>
+                )}
+              </div>
               <span className="text-lg font-black text-gray-900">
                 {CURRENCY}{gig.price}
               </span>
