@@ -1,9 +1,6 @@
 // hustlehub-backend/server.js
 const express = require('express');
 const cors = require('cors');
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
 require('dotenv').config({ path: __dirname + '/.env' });
 const mongoose = require('mongoose');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -43,7 +40,9 @@ app.use((req, res, next) => {
 app.use(mongoSanitize());
 
 // 4. Database Connection
-mongoose.connect(process.env.MONGODB_URI)
+const dbUri = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb+srv://andiswa:kh6hrH6IknB67MQ6@cluster0.e03tiqd.mongodb.net/hustlehub?appName=Cluster0";
+
+mongoose.connect(dbUri)
     .then(() => console.log('Connected to MongoDB database'))
     .catch((err) => console.error('MongoDB connection error:', err));
 
@@ -61,11 +60,6 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-const sslOptions = {
-    key: fs.readFileSync(path.join(__dirname, 'server.key')),
-    cert: fs.readFileSync(path.join(__dirname, 'server.cert'))
-};
-
-https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`Secure Hustlehub+ server running on https://localhost:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Hustlehub+ server running on http://localhost:${PORT}`);
 });
