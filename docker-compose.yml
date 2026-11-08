@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./hustlehub-backend
+      dockerfile: Dockerfile
+    container_name: hustlehub_backend
+    ports:
+      - "5000:5000"
+    # Mount the local backend .env file directly into the container
+    env_file:
+      - ./hustlehub-backend/.env
+    restart: unless-stopped
+
+  frontend:
+    build: 
+      context: ./hustlehub-frontend
+      dockerfile: Dockerfile
+    container_name: hustlehub_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      # Ensures the browser routes API calls back to your mapped backend port
+      - VITE_API_URL=https://localhost:5000
+    depends_on:
+      - backend
+    restart: unless-stopped

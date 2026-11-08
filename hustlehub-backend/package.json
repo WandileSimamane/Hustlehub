@@ -4,8 +4,8 @@
   "description": "initial repo",
   "main": "server.js",
   "scripts": {
-    "start": "node hustlehub-backend/server.js",
-    "dev": "nodemon hustlehub-backend/server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
