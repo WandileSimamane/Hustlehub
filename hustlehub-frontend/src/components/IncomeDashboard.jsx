@@ -1,12 +1,26 @@
-/* AI Declaration
- * Date: October 11, 2026
- * Description: Assisted with Tailwind CSS v4 configuration, debugging Vite routing and styling the glassmorphism dashboard layout.
- * Chat Link: https://share.gemini.google/E3FLTlhfku18
- */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+} from 'recharts';
+
 const API = import.meta.env.VITE_API_URL || 'https://localhost:5000';
 const rand = (n) => `R${Number(n || 0).toFixed(2)}`;
+const PIE_COLORS = ['#00cc99', '#ff355e']; // net take-home, estimated tax
+
+// Group transactions by month so the bar chart works from data already loaded
+const groupByMonth = (transactions) => {
+  const totals = {};
+  transactions.forEach((t) => {
+    const d = new Date(t.createdAt);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    totals[key] = (totals[key] || 0) + Number(t.amount || 0);
+  });
+  return Object.keys(totals)
+    .sort()
+    .map((month) => ({ month, income: Math.round(totals[month] * 100) / 100 }));
+};
 
 export default function IncomeDashboard() {
   const [summary, setSummary] = useState(null);
@@ -42,22 +56,34 @@ export default function IncomeDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+  const monthly = useMemo(() => groupByMonth(transactions), [transactions]);
+
   if (loading) return (
     <div className="flex justify-center items-center min-h-[50vh]">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#393bc6]"></div>
     </div>
   );
-  
+
   if (error) return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-red-50 border border-red-100 text-[#ff355e] rounded-xl font-medium text-center">
       {error}
     </div>
   );
 
+  // Gross falls back to totalIncome so the page still works before the tax fields exist
+  const gross = summary.grossIncome ?? summary.totalIncome ?? 0;
+  const hasTax = summary.estimatedTax !== undefined && summary.netIncome !== undefined;
+  const tax = summary.estimatedTax ?? 0;
+  const net = summary.netIncome ?? gross;
+  const pieData = [
+    { name: 'Net take-home', value: net },
+    { name: 'Estimated tax', value: tax },
+  ];
+
   return (
     <div className="min-h-screen bg-transparent p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto">
-        
+
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">Freelancer Dashboard</h1>
@@ -69,46 +95,89 @@ export default function IncomeDashboard() {
           </Link>
         </div>
 
-        <section aria-label="Total earnings" className="mb-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-8 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-shadow duration-300">
-              <div className="flex items-start justify-between relative z-10">
-                <div>
-                  <h2 className="text-gray-900 font-bold text-lg mb-1">Total Earnings</h2>
-                  <p className="text-gray-500 text-sm mb-6">Your sales monitoring dashboard.</p>
-                  
-                  <div className="flex items-baseline gap-3">
-                    <p data-testid="total-earnings" className="text-5xl font-black text-[#393bc6] tracking-tight">
-                      {rand(summary.totalIncome)}
-                    </p>
-                    <span className="text-[#00cc99] font-semibold text-sm bg-[#00cc99]/10 px-2.5 py-1 rounded-md">
-                      +12.5% 
-                    </span>
-                  </div>
-                  <small className="block mt-2 text-gray-500 font-medium">{summary.transactionCount} successful transaction(s)</small>
-                </div>
-                
-                <div className="bg-[#393bc6]/10 p-4 rounded-xl text-[#393bc6]">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </div>
-              </div>
+        {/* Gross / Tax / Net summary */}
+        <section aria-label="Income summary" className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
+              <h2 className="text-gray-500 font-semibold text-sm">Gross income</h2>
+              <p data-testid="total-earnings" className="text-4xl font-black text-[#393bc6] tracking-tight mt-2">
+                {rand(gross)}
+              </p>
+              <small className="block mt-2 text-gray-500 font-medium">
+                {summary.transactionCount} successful transaction(s)
+              </small>
             </div>
 
-            <div className="bg-gradient-to-br from-[#393bc6] to-[#2e30a8] rounded-2xl shadow-lg p-8 text-white relative overflow-hidden flex flex-col justify-center">
-              <h3 className="text-2xl font-bold mb-2 z-10">Get premium account!</h3>
-              <p className="text-indigo-200 text-sm mb-6 max-w-[200px] z-10">Optimize your selling product and enjoy the advantage of premium.</p>
-              <button className="bg-white text-[#393bc6] hover:bg-gray-50 font-bold py-2.5 px-6 rounded-lg self-start transition-colors shadow-sm z-10">
-                Get Premium
-              </button>
-              <div className="absolute -bottom-12 -right-12 w-40 h-40 bg-[#ff355e] rounded-full opacity-90"></div>
-              <div className="absolute top-10 -right-10 w-24 h-24 bg-[#00cc99] rounded-full opacity-90 blur-xl"></div>
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
+              <h2 className="text-gray-500 font-semibold text-sm">Estimated tax</h2>
+              <p data-testid="estimated-tax" className="text-4xl font-black text-[#ff355e] tracking-tight mt-2">
+                {hasTax ? rand(tax) : '—'}
+              </p>
+              <small className="block mt-2 text-gray-500 font-medium">
+                {hasTax ? `${summary.effectiveRate ?? 0}% effective rate` : 'Tax estimate unavailable'}
+              </small>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
+              <h2 className="text-gray-500 font-semibold text-sm">Net take-home pay</h2>
+              <p data-testid="net-income" className="text-4xl font-black text-[#00cc99] tracking-tight mt-2">
+                {hasTax ? rand(net) : '—'}
+              </p>
+              <small className="block mt-2 text-gray-500 font-medium">After estimated tax</small>
             </div>
           </div>
         </section>
 
+        {/* Charts */}
+        <section aria-label="Income charts" className="mb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
+              <h2 className="text-lg font-bold text-gray-900">Where your income goes</h2>
+              <p className="text-sm text-gray-500 mt-1 mb-4">Net take-home compared with estimated tax</p>
+              {hasTax && gross > 0 ? (
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={2}>
+                        {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
+                      </Pie>
+                      <Tooltip formatter={(v) => rand(v)} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">No income to chart yet.</div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6">
+              <h2 className="text-lg font-bold text-gray-900">Income by month</h2>
+              <p className="text-sm text-gray-500 mt-1 mb-4">Gross income from confirmed transactions</p>
+              {monthly.length > 0 ? (
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={monthly}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(v) => rand(v)} />
+                      <Bar dataKey="income" name="Gross income" fill="#393bc6" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-64 flex items-center justify-center text-gray-500">No transactions to chart yet.</div>
+              )}
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            Tax is an estimate based on confirmed income and is not professional tax advice.
+          </p>
+        </section>
+
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          
+
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <div>
@@ -116,7 +185,7 @@ export default function IncomeDashboard() {
                 <p className="text-sm text-gray-500 mt-1">Recent client requests</p>
               </div>
             </div>
-            
+
             <div className="flex-1 overflow-x-auto">
               {bookings.length === 0 ? (
                 <div className="p-10 text-center text-gray-500">No bookings yet.</div>
@@ -164,11 +233,8 @@ export default function IncomeDashboard() {
                 <h2 className="text-lg font-bold text-gray-900">Transactions</h2>
                 <p className="text-sm text-gray-500 mt-1">Payment history</p>
               </div>
-              <button className="text-[#393bc6] hover:text-[#2e30a8] p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
-              </button>
             </div>
-            
+
             <div className="flex-1 overflow-x-auto">
               {transactions.length === 0 ? (
                 <div className="p-10 text-center text-gray-500">No transactions yet.</div>
