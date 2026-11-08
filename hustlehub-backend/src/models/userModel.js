@@ -22,6 +22,15 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['Client', 'Freelancer', 'Admin'],
         default: 'Client'
+    },
+    // Added security fields for Account Lockout
+    loginAttempts: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    lockUntil: {
+        type: Date
     }
 }, { timestamps: true });
 
