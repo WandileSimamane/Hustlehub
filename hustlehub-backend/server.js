@@ -1,7 +1,10 @@
 // hustlehub-backend/server.js
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config({ path: __dirname + '/.env' });
+require('dotenv').config({ path: __dirname + '/.env', quiet: true });
 const mongoose = require('mongoose');
 const mongoSanitize = require('express-mongo-sanitize');
 
@@ -39,12 +42,17 @@ app.use((req, res, next) => {
 // Prevent NoSQL Injection attacks globally
 app.use(mongoSanitize());
 
-// 4. Database Connection
-const dbUri = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb+srv://andiswa:kh6hrH6IknB67MQ6@cluster0.e03tiqd.mongodb.net/hustlehub?appName=Cluster0";
+// 4. Database Connection (credentials come from the environment only)
+const dbUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+if (!dbUri) {
+    console.error('MONGODB_URI is not set. Add it to your environment or docker-compose.');
+    process.exit(1);
+}
 
 mongoose.connect(dbUri)
     .then(() => console.log('Connected to MongoDB database'))
-    .catch((err) => console.error('MongoDB connection error:', err));
+    .catch((err) => console.error('MongoDB connection error:', err.message));
 
 // 5. Routes
 app.get('/', (req, res) => {
@@ -58,8 +66,21 @@ app.use('/api/dashboard', dashboardRoutes); // MBALI
 
 app.use(errorHandler);
 
+// 6. Start the server over HTTPS
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`Hustlehub+ server running on http://localhost:${PORT}`);
-});
+const keyPath = path.join(__dirname, 'server.key');
+const certPath = path.join(__dirname, 'server.cert');
+
+if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    const options = {
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath),
+    };
+    https.createServer(options, app).listen(PORT, () => {
+        console.log(`Hustlehub+ server running securely on https://localhost:${PORT}`);
+    });
+} else {
+    console.error('SSL certificate or key missing: refusing to start without HTTPS.');
+    process.exit(1);
+}

@@ -1,6 +1,8 @@
+// src/services/dashboardService.js
 const mongoose = require('mongoose');
 const Transaction = require('../models/transactionModel');
 const Booking = require('../models/bookingModel');
+const { estimateTax, round2 } = require('./taxService');
 
 // Rejects anything that isn't a valid ObjectId before it reaches the database
 const toObjectId = (id) => {
@@ -10,7 +12,7 @@ const toObjectId = (id) => {
   return new mongoose.Types.ObjectId(id);
 };
 
-// Total historical income + monthly breakdown, via aggregation
+// Total historical income + estimated tax + monthly breakdown, via aggregation
 exports.getIncomeSummary = async (freelancerId) => {
   const match = { $match: { freelancer: toObjectId(freelancerId) } };
 
@@ -38,21 +40,25 @@ exports.getIncomeSummary = async (freelancerId) => {
     { $sort: { '_id.year': 1, '_id.month': 1 } },
   ]);
 
-  
+  // Tax estimate is based on confirmed income only (a Transaction exists only after confirmation)
+  const gross = round2(totals ? totals.totalIncome : 0);
+  const tax = estimateTax(gross);
+
   return {
-    totalIncome: totals ? totals.totalIncome : 0,
+    ...tax, // taxYear, grossIncome, estimatedTax, netIncome, effectiveRate
+    totalIncome: tax.grossIncome,
     transactionCount: totals ? totals.transactionCount : 0,
-    averageTransaction: totals ? Math.round(totals.averageTransaction * 100) / 100 : 0,
+    averageTransaction: totals ? round2(totals.averageTransaction) : 0,
     monthly: monthly.map((m) => ({
       year: m._id.year,
       month: m._id.month,
-      income: m.income,
+      income: round2(m.income),
       count: m.count,
     })),
   };
 };
 
-//Get all transactions for a freelancer, with client and booking details
+// Get all transactions for a freelancer, with client and booking details
 exports.getTransactions = (freelancerId) =>
   Transaction.find({ freelancer: toObjectId(freelancerId) })
     .populate('client', 'name')
@@ -60,7 +66,7 @@ exports.getTransactions = (freelancerId) =>
     .sort({ createdAt: -1 })
     .lean();
 
-//Get all bookings received by a freelancer, with gig and client details 
+// Get all bookings received by a freelancer, with gig and client details
 exports.getReceivedBookings = (freelancerId) =>
   Booking.find({ freelancer: toObjectId(freelancerId) })
     .populate('gig', 'title price')
