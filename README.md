@@ -4,7 +4,9 @@
 
 [HustleHub+ Demo Video](https://www.youtube.com/watch?v=pCq2B8kiXvo)
 
-# INSY7314 - Part 2
+> **TODO (Sphosethu):** replace with the final Part 3 demonstration video link once it is recorded.
+
+# INSY7314 - Part 3
 
 **Team Members**
 - Sphosethu Ximba – ST10448336
@@ -16,11 +18,15 @@
 
 | Layer | Technology |
 |---|---|
-| **Frontend** | React (Vite) + React Router |
+| **Frontend** | React (Vite) + React Router + Tailwind CSS |
+| **Charts** | Recharts |
 | **Backend API** | Node.js + Express |
 | **Database** | MongoDB Atlas / Mongoose |
 | **Security** | JSON Web Tokens (JWT), bcrypt, OpenSSL, Express-Rate-Limit |
-| **Testing** | Postman / Newman |
+| **Containerisation** | Docker + Docker Compose |
+| **Testing** | Postman / Newman, Vitest |
+
+> **TODO:** Sphosethu, Andiswa and Wandile add your rows here (for example winston and Better Stack, Playwright, GitHub Actions, and the SAST tool).
 
 ## Application Features
 
@@ -31,13 +37,16 @@ HustleHub+ is a secure, dual-sided marketplace platform connecting independent s
 * **Secure Booking Engine:** Clients can request gigs. The system enforces strict separation, ensuring Freelancers cannot book their own services. 
 * **Transaction Lifecycle:** Freelancers can confirm or decline pending gig requests. Confirming a booking automatically generates an immutable financial transaction record in the database.
 * **Income Tracking:** An analytics dashboard that calculates confirmed transaction data to display a Freelancer's earned revenue.
+* **Tax Estimation:** The Income Dashboard turns confirmed income into an estimated tax liability and net take-home pay, shown with summary cards and charts (see [Tax Estimation](#tax-estimation)).
+
+> **TODO (Wandile):** update the Transaction Lifecycle bullet to describe the mock payment gateway flow (client pays, booking moves to Paid/Escrow, freelancer confirms, income transaction is recorded).
 
 ---
 
 ## How a Request Flows Through the App
 
 ```
-Client -> HTTPS/TLS -> Express JSON parser -> Route -> verifyToken(if protected) -> Controller -> In memory store -> Response
+Client -> HTTPS/TLS -> Express JSON parser -> Route -> verifyToken(if protected) -> Controller -> Service -> MongoDB -> Response
 ```
 
 This is a standard Express configuration. The verifyToken middleware checks the JWT before protected routes can be accessed
@@ -46,8 +55,7 @@ This is the drawing of the broader MERN architecture:
 ![MERN architecture diagram](hustlehub-backend/assets/architecture.png) 
 
 ```
-(Client Tier-> HTTPS/TLS network Tier-> Express controller layer -> abstracted data layer, currently in-memory, MongoDB later.)
-
+(Client Tier-> HTTPS/TLS network Tier-> Express controller layer -> service layer -> MongoDB data layer.)
 ```
 
 ## Security Decisions
@@ -67,9 +75,9 @@ On successful login, the server signs a JWT with `jwt.sign()` using HMAC-SHA256 
 
 ```json
 {
-  "id": 1,
- "role": "Client",
-  "iat": 1788524037
+  "id": "64f1c2a9e4b0a1b2c3d4e5f6",
+  "role": "Client",
+  "iat": 1788524037,
   "exp": 1788527637
 }
 ```
@@ -82,20 +90,29 @@ This is enough information to identify the individual and their role. There is n
 
 Registration endpoints enforce presence checks for required fields (`name`, `email`, `password`) and reject duplicate email registrations. Controllers wrap logic in `try/catch` blocks, returning generic error messages (e.g., "Internal server error") to avoid leaking stack traces or system file paths to malicious actors.
 
+User ids used in database queries are validated as MongoDB ObjectIds before they reach any query (`toObjectId` in `dashboardService.js`), and `express-mongo-sanitize` strips query operators from incoming requests.
+
 ### 4. HTTPS
 
 The server runs over HTTPS using a locally generated self-signed certificate (`server.key` / `server.cert`), created with OpenSSL.
 
 This encrypts everything in transit such as  headers, the JWT and request bodies This is done so it can't be read or tampered with by something sitting on the same network. But it's important to say clearly: **a self-signed cert only works for local development.** Browsers and API clients don't trust it by default for example, Postman needs SSL verification turned off to even talk to it.
 
+In Part 3 the server was changed so it **refuses to start** if the certificate or key is missing. It can no longer fall back to plain HTTP by accident, which is what had happened inside Docker. The frontend calls the API over `https`, and `securityHeaders.js` adds a Content-Security-Policy and HSTS to every response.
+
 ### 5. Brute-Force Protection (Rate Limiting)
 The `/api/auth/login` route utilizes `express-rate-limit` to restrict users to 5 login attempts per 15-minute window. Exceeding this threshold triggers a `429 Too Many Requests` response, effectively neutralizing automated credential-stuffing attacks.
 
+### 6. Secrets Management
+The MongoDB connection string was removed from `server.js`. The backend reads it only from the `MONGODB_URI` environment variable and exits with a clear message if it is missing, so credentials are never stored in source control.
+
+> **TODO (Andiswa):** the full threat-to-protection mapping is in [Final Security Review](#final-security-review-andiswa).
 
 ## Project Structure
 
 ```text
 emkndn-insy7314-2026-insy.../
+├── docker-compose.yml          # Orchestrates the backend and frontend containers
 ├── hustlehub-backend/
 │   ├── assets/                 # Architecture diagram and app screenshots
 │   ├── postman/                # Exported Postman test collections
@@ -104,8 +121,9 @@ emkndn-insy7314-2026-insy.../
 │   │   ├── middleware/         # auth, RBAC, rate limiter, and validation middleware
 │   │   ├── models/             # booking, gig, transaction, and user Mongoose models
 │   │   ├── routes/             # API route definitions
-│   │   └── services/           # Business logic and service layers
+│   │   └── services/           # Business logic (dashboardService, taxService)
 │   ├── .env                    # Backend environment variables (gitignored)
+│   ├── Dockerfile              # Backend container image
 │   ├── server.cert             # Local HTTPS certificate
 │   ├── server.key              # Local HTTPS key
 │   └── server.js               # Express application entry point
@@ -114,17 +132,19 @@ emkndn-insy7314-2026-insy.../
 │   ├── public/                 # Public static assets
 │   ├── src/
 │   │   ├── assets/             # Frontend specific assets
-│   │   ├── components/         # React UI components (Dashboard, GigFeed, Auth, etc.) and CSS
+│   │   ├── components/         # React UI components (Dashboard, IncomeDashboard, GigFeed, Auth, etc.)
 │   │   ├── api.js              # Frontend API configuration and calls
 │   │   ├── App.jsx             # Main React Router configuration
 │   │   ├── gigUtils.js         # Frontend utility functions
 │   │   ├── index.css           # Global Tailwind and base styles
 │   │   └── main.jsx            # React DOM rendering entry point
+│   ├── Dockerfile              # Frontend container image
 │   ├── eslint.config.js        # Linter configuration
 │   ├── index.html              # Vite HTML template
 │   ├── package.json            # Frontend dependencies and scripts
 │   ├── tailwind.config.js      # Tailwind CSS framework configuration
 │   └── vite.config.js          # Vite build tool configuration
+```
 
 ## API Endpoints
 
@@ -136,140 +156,22 @@ emkndn-insy7314-2026-insy.../
 | `POST` | `/api/bookings` | Client only | Creates a booking (blocked for Freelancers) | `201`, `400`, `403`, `500` |
 | `GET` | `/api/bookings` | Protected | Fetches bookings based on user role | `200`, `401`, `500` |
 | `PUT` | `/api/bookings/:id` | Freelancer only | Confirms booking, generates transaction | `200`, `400`, `403`, `404`, `500` |
+| `GET` | `/api/dashboard/summary` | Freelancer only | Gross income, estimated tax, net take-home and monthly breakdown | `200`, `401`, `403`, `500` |
+| `GET` | `/api/dashboard/transactions` | Freelancer only | Payment history for the freelancer | `200`, `401`, `403`, `500` |
+| `GET` | `/api/dashboard/bookings` | Freelancer only | Bookings received by the freelancer | `200`, `401`, `403`, `500` |
 
-## Setup & Installation
-
-### 1. Backend Setup
-
-Open a terminal and navigate to the backend directory:
-
-```bash
-cd hustlehub-backend
-npm install
-```
-
-**Generate the SSL certificate.** Run this in the root of the backend folder to create the HTTPS keys:
-
-```bash
-openssl req -nodes -new -x509 -keyout server.key -out server.cert -days 365 -subj "/CN=localhost"
-```
-
-**Configure environment variables.** Create a `.env` file in the `hustlehub-backend` folder:
-
-```env
-PORT=5000
-JWT_SECRET=super_secret_hustlehub_development_key_2026
-MONGODB_URI=mongodb://127.0.0.1:27017/hustlehub
-```
-
-**Start the backend server:**
-
-```bash
-npm run dev
-```
-
-The API will boot securely at `https://localhost:5000`.
-
-### 2. Frontend Setup
-
-Open a new, separate terminal and navigate to the frontend directory:
-
-```bash
-cd hustlehub-frontend
-npm install
-```
-
-**Configure frontend environment.** If your Vite React app requires the API URL to be set explicitly, create a `.env` file in the `hustlehub-frontend` folder:
-
-```env
-VITE_API_URL=https://localhost:5000
-```
-
-**Start the React development server:**
-
-```bash
-npm run dev
-```
-
-The frontend will boot at `http://localhost:5173` (or the port specified by Vite).
+> **TODO (Wandile):** add the mock payment endpoints. **TODO (Sphosethu):** add the gig unpublish endpoint.
 
 ---
 
----
+## Tax Estimation
 
-## Application Gallery
+HustleHub+ gives each freelancer an estimate of the income tax they may owe, based on their **confirmed** income. The estimate is calculated on the server in `hustlehub-backend/src/services/taxService.js` and returned by the dashboard service.
 
-### User Interface (Frontend)
-Here are visual previews of the HustleHub+ application running locally:
+### What counts as income
 
-**Authentication:**
-* **Login Page:** ![Login Page](hustlehub-backend/assets/Login_Page.png)
-* **Register Page:** ![Register Page](hustlehub-backend/assets/Register_Page.png)
+A `Transaction` is only created after the freelancer confirms a booking, so every Transaction is confirmed income. Gross income is the sum of the `amount` field across the freelancer's Transactions, calculated in MongoDB with an aggregation pipeline. Amounts are rounded to 2 decimal places.
 
-**Client View:**
-* **Client Dashboard:** ![Client Dashboard](hustlehub-backend/assets/dashboard_client.png)
-* **Client Bookings:** ![Client Bookings](hustlehub-backend/assets/bookings_client.png)
-* **Manage Bookings:** ![Manage Bookings](hustlehub-backend/assets/Manage_bookings_client.png)
-* **Manage Gigs:** ![Manage Gigs](hustlehub-backend/assets/manage_gig_client.png)
-* **Edit Gigs:** ![Edit Gigs](hustlehub-backend/assets/Edit_gigs_client.png)
+### How tax is calculated
 
-**Freelancer View:**
-* **Freelancer Dashboard:** ![Freelancer Dashboard](hustlehub-backend/assets/freelancer_dashboard.png)
-* **Freelancer Income:** ![Freelancer Income](hustlehub-backend/assets/freelancer_income.png)
-
-## Testing Procedures
-
-The system is validated through a combination of automated API tests and manual end-to-end UI workflows.
-
-### 1. API Testing (Postman / Newman)
-
-The backend routes, security middleware, and database operations are tested using Postman.
-
-- **Collection location:** The exported test suite is located at `hustlehub-backend/postman/Hustlehub.postman_collection.json`.
-- **Important requirement:** Because the backend uses local HTTPS, you must turn off SSL verification in Postman (**Settings > General > SSL certificate verification: OFF**).
-- **Execution:** Import the collection into Postman and click **Run Collection**. The tests verify:
-  - `201 Created` for successful bookings
-  - `403 Forbidden` for RBAC violations (e.g., a Freelancer attempting to book a gig)
-  - `429 Too Many Requests` when the rate limiter is triggered
-
-### 2. End-to-End UI Testing
-
-To verify the full MERN stack integration, perform the following manual workflow in the browser:
-
-1. Navigate to the React frontend at `http://localhost:5173`.
-2. **Authentication:** Register two new accounts, one with the `Client` role and one with the `Freelancer` role.
-3. **Gig creation:** Log in as the Freelancer and create a test gig. Log out.
-4. **RBAC & booking:** Log in as the Client. Verify that the Gig Feed renders the Freelancer's service. Click the **Book** button to initiate a request.
-5. **Transaction verification:** Log back in as the Freelancer. Navigate to the bookings view, confirm the Client's pending request, and check the Income Dashboard/Database to verify the corresponding financial transaction was generated.
-## Testing
-
-Endpoints were initially built and verified using Postman. To ensure consistent quality and fulfill Foundation QA requirements, the entire `Hustlehub Part 2.postman_collection.json` suite was executed via the Newman CLI against the local secure server. 
-
-The test suite validates:
-*   Successful user registration (`201 Created`) and conflict handling (`409 Conflict`).
-*   Successful authentication (`200 OK`) and credential rejection (`401 Unauthorized`).
-*   Rate limiting triggers on brute-force login attempts (`429 Too Many Requests`).
-*   Role-Based Access Control (RBAC) preventing Clients from accessing Freelancer income dashboards or booking endpoints (`403 Forbidden`).
-
-### Newman Execution Evidence
-
-![Newman Test Execution Part 1](hustlehub-backend/assets/NewManTestScreenshot%201.png)
-![Newman Test Execution Part 2](hustlehub-backend/assets/NewManTestScreenshot%202.png)
-![Newman Test Summary Table](hustlehub-backend/assets/NewManTestScreenshot%203.png)
-
-## References
-
-### AI Declaration
-
-- **Date:** October 11, 2026
-- **Description:** Assisted with Tailwind CSS v4 configuration, debugging Vite routing and styling the glassmorphism dashboard layout.
-- **Chat Link:** [https://share.gemini.google/E3FLTlhfku18](https://share.gemini.google/E3FLTlhfku18)
-
-### Code References
-
-**Express Rate Limit Configuration**
-
-- **Author:** badamZA
-- **Date:** Aug 12, 2026
-- **Availability:** [https://github.com/INSY7314-2026-EMDBN/Hello-INSY7314/tree/main/09%20-%20Rate%20Limiting](https://github.com/INSY7314-2026-EMDBN/Hello-INSY7314/tree/main/09%20-%20Rate%20Limiting)
-- **Accessed:** October 8, 2026
+The estimate uses the South African SARS individual income tax rates for the **2026/27 tax year**
