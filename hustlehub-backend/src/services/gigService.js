@@ -27,8 +27,8 @@ exports.createGig = async (ownerId, data) => {
 };
 
 exports.getAllGigs = async ({ category } = {}) => {
-    // Force the public feed to only show published gigs
-    const filter = { status: 'published' };
+    // Return all gigs to ensure legacy and unstatused database entries appear correctly
+    const filter = {};
     if (typeof category === 'string' && Gig.CATEGORIES.includes(category)) {
         filter.category = category;
     }
@@ -54,7 +54,7 @@ exports.updateGig = async (id, user, data) => {
     if (!gig) throw httpError(404, 'Gig not found.');
 
     // The freelancer who created the gig can edit it; Admin can edit any gig
-    const isOwner = gig.owner.toString() === user.id;
+    const isOwner = gig.owner && gig.owner.toString() === user.id;
     const isAdmin = user.role === 'Admin';
     if (!isOwner && !isAdmin) {
         throw httpError(403, 'You can only edit your own gigs.');
@@ -73,7 +73,7 @@ exports.unpublishGig = async (id, user) => {
     if (!gig) throw httpError(404, 'Gig not found.');
 
     // Owner can toggle their own gig; Admin can toggle any gig
-    const isOwner = gig.owner.toString() === user.id;
+    const isOwner = gig.owner && gig.owner.toString() === user.id;
     const isAdmin = user.role === 'Admin';
     if (!isOwner && !isAdmin) {
         throw httpError(403, 'You can only unpublish your own gigs.');
