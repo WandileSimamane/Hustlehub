@@ -19,7 +19,6 @@ RUN npm ci --omit=dev
 # Copy application source and environment explicitly
 COPY --chown=node:node src/ ./src/
 COPY --chown=node:node server.js ./
-COPY --chown=node:node .env ./
 
 # Expose backend port
 EXPOSE 5000
