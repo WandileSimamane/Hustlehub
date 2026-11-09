@@ -14,12 +14,14 @@ transports.push(
     })
 );
 
-// 2. If the cloud token exists, stream logs to Better Stack
-if (process.env.LOGTAIL_SOURCE_TOKEN) {
-    const logtail = new Logtail(process.env.LOGTAIL_SOURCE_TOKEN);
+// 2. If the cloud token AND endpoint exist, stream logs to Better Stack
+if (process.env.LOGTAIL_SOURCE_TOKEN && process.env.LOGTAIL_ENDPOINT) {
+    const logtail = new Logtail(process.env.LOGTAIL_SOURCE_TOKEN, {
+        endpoint: process.env.LOGTAIL_ENDPOINT
+    });
     transports.push(new LogtailTransport(logtail));
 } else {
-    console.warn('LOGTAIL_SOURCE_TOKEN missing: Cloud logging is disabled.');
+    console.warn('LOGTAIL credentials missing: Cloud logging is disabled.');
 }
 
 // Create and export the Winston logger instance
