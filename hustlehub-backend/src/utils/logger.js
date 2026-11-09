@@ -1,3 +1,10 @@
+/*
+ * Title: Connecting Node.js + Better Stack
+ * Author: Better Stack
+ * Date: Jan 15, 2026
+ * Availability: https://betterstack.com/docs/logs/javascript-and-nodejs/
+ * Accessed: November 9, 2026
+ */
 const winston = require('winston');
 const { Logtail } = require('@logtail/node');
 const { LogtailTransport } = require('@logtail/winston');

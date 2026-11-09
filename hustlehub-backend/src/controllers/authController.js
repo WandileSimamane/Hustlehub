@@ -1,3 +1,10 @@
+/*
+ * Title: winston
+ * Author: winstonjs
+ * Date: Jun 12, 2024
+ * Availability: https://github.com/winstonjs/winston
+ * Accessed: November 9, 2026
+ */
 const authService = require('../services/authService');
 const logger = require('../utils/logger'); // Inject logger
 

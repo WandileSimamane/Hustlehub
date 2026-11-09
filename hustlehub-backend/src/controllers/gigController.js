@@ -1,3 +1,10 @@
+/*
+ * Title: Express Routing
+ * Author: OpenJS Foundation
+ * Date: Apr 19, 2024
+ * Availability: https://expressjs.com/en/guide/routing.html
+ * Accessed: November 9, 2026
+ */
 const gigService = require('../services/gigService');
 
 // Sets the status code, then passes the error to the shared errorHandler

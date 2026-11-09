@@ -1,3 +1,10 @@
+/*
+ * Title: winston
+ * Author: winstonjs
+ * Date: Jun 12, 2024
+ * Availability: https://github.com/winstonjs/winston
+ * Accessed: November 9, 2026
+ */
 const Booking = require('../models/bookingModel');
 const Gig = require('../models/gigModel');
 const Transaction = require('../models/transactionModel.js');

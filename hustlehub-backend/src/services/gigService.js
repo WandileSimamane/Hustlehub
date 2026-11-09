@@ -1,3 +1,10 @@
+/*
+ * Title: Mongoose: Queries
+ * Author: Automattic
+ * Date: Oct 31, 2023
+ * Availability: https://mongoosejs.com/docs/queries.html
+ * Accessed: November 9, 2026
+ */
 const mongoose = require('mongoose');
 const Gig = require('../models/gigModel');
 

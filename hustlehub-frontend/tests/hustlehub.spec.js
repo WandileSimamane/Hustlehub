@@ -1,3 +1,10 @@
+/*
+ * Title: Network Mocking
+ * Author: Microsoft
+ * Date: Feb 20, 2024
+ * Availability: https://playwright.dev/docs/network#mock-api-requests
+ * Accessed: November 9, 2026
+ */
 import { test, expect } from '@playwright/test';
 
 test.describe('HustleHub+ Frontend UI & Interaction Tests', () => {
