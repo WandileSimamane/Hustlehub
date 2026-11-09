@@ -3,7 +3,6 @@ const express = require('express');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
 const cors = require('cors');
 require('dotenv').config({ path: __dirname + '/.env', quiet: true });
 const mongoose = require('mongoose');
