@@ -24,13 +24,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
-      # 1. Backend Setup & Tests
+      # 1. Backend Setup, Lint & Tests
       - name: Install Backend Dependencies
         run: |
           cd hustlehub-backend
           npm ci
+
+      - name: Lint Backend
+        run: |
+          cd hustlehub-backend
+          npm run lint
 
       - name: Run Backend Tests
         run: |
@@ -41,11 +45,16 @@ jobs:
           JWT_SECRET: ci_test_jwt_secret_key_12345
           MONGODB_URI: mongodb://127.0.0.1:27017/hustlehub_test
 
-      # 2. Frontend Build Check
+      # 2. Frontend Setup, Lint & Build Check
       - name: Install Frontend Dependencies
         run: |
           cd hustlehub-frontend
           npm ci
+
+      - name: Lint Frontend
+        run: |
+          cd hustlehub-frontend
+          npm run lint
 
       - name: Build Frontend Application
         run: |
@@ -55,6 +64,11 @@ jobs:
           VITE_API_URL: https://localhost:5000
 
       # 3. Docker Containerisation & Verification
+      - name: Create dummy .env for Docker Compose
+        run: |
+          touch hustlehub-backend/.env
+          touch hustlehub-frontend/.env
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -79,4 +93,4 @@ jobs:
       - name: Teardown Docker Environment
         if: always()
         run: |
-          docker compose down
+          docker compose down || true
