@@ -14,7 +14,7 @@ USER node
 COPY --chown=node:node package*.json ./
 
 # Install exact locked dependencies (scripts allowed so bcrypt can build its binaries)
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
 # Copy application source and environment explicitly
 COPY --chown=node:node src/ ./src/
