@@ -7,7 +7,7 @@ export default function FreelancerBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchBookings = async () => {
+const fetchBookings = async () => {
     try {
       const res = await api.get('/api/bookings');
       // Handle variable API response structures safely
@@ -15,6 +15,7 @@ export default function FreelancerBookings() {
       setBookings(list);
       setError('');
     } catch (err) {
+      console.error(err); 
       setError('Could not load your bookings. Try again later.');
     } finally {
       setLoading(false);
@@ -22,9 +23,9 @@ export default function FreelancerBookings() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBookings();
   }, []);
-
   const handleUpdateStatus = async (bookingId, newStatus) => {
     try {
       await api.patch(`/api/bookings/${bookingId}/status`, { status: newStatus });
