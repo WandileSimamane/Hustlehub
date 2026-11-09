@@ -4,17 +4,25 @@ FROM node:20-alpine
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Ensure proper non-root directory ownership
+RUN chown -R node:node /app
 
-# Install frontend dependencies
-RUN npm install
+# Switch to non-root user
+USER node
 
-# Copy the remaining frontend source code
-COPY . .
+# Copy package dependency manifests
+COPY --chown=node:node package*.json ./
 
-# Expose the default Vite port
+# Install frontend dependencies with lifecycle script safeguards
+RUN npm install --ignore-scripts
+
+# Copy frontend source code and configs explicitly
+COPY --chown=node:node index.html vite.config.js ./
+COPY --chown=node:node src/ ./src/
+COPY --chown=node:node public/ ./public/
+
+# Expose Vite development port
 EXPOSE 5173
 
-# Start the Vite development server and expose it to the Docker network
+# Start Vite dev server bound to docker network interface
 CMD ["npm", "run", "dev", "--", "--host"]

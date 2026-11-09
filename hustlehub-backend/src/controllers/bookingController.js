@@ -1,4 +1,4 @@
- /*
+/*
  * Title: winston
  * Author: winstonjs
  * Date: Jun 12, 2024
@@ -14,10 +14,9 @@ const logger = require('../utils/logger'); // Inject logger
 exports.createBooking = async (req, res, next) => {
     try {
         const { gigId } = req.body;
-        const safeGigId = String(gigId); //explicitly cast to string
+        const safeGigId = String(gigId);
         const clientId = String(req.user.id || req.user._id);
 
-        // Pass the sanitized variable to the database query
         const gig = await Gig.findById(safeGigId);
         if (!gig) {
             return res.status(404).json({ message: 'Gig not found' });
@@ -40,7 +39,6 @@ exports.createBooking = async (req, res, next) => {
             paymentStatus: 'Unpaid'
         });
 
-        // Log the booking creation
         logger.info('New booking created', { 
             bookingId: booking._id, 
             clientId: clientId, 
@@ -59,16 +57,16 @@ exports.createBooking = async (req, res, next) => {
 
 exports.payForBooking = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const safeBookingId = String(req.params.id);
         const { cardHolder, cardNumber, expiry, cvv } = req.body;
-        const userId = req.user.id || req.user._id;
+        const userId = String(req.user.id || req.user._id);
 
-        const booking = await Booking.findById(id).populate('gig');
+        const booking = await Booking.findById(safeBookingId).populate('gig');
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        if (booking.client.toString() !== String(userId)) {
+        if (booking.client.toString() !== userId) {
             return res.status(403).json({ message: 'You can only pay for your own bookings' });
         }
 
@@ -90,7 +88,6 @@ exports.payForBooking = async (req, res, next) => {
         booking.paidAt = new Date();
         await booking.save();
 
-        // Log the payment
         logger.info('Booking payment successful', { 
             bookingId: booking._id, 
             amount: booking.gig.price,
@@ -110,8 +107,8 @@ exports.payForBooking = async (req, res, next) => {
 // Get bookings based on user role (Admin gets all system bookings)
 exports.getBookings = async (req, res, next) => {
     try {
-        let query = {};
-       const safeUserId = String(req.user.id || req.user._id);
+        const query = {};
+        const safeUserId = String(req.user.id || req.user._id);
 
         if (req.user.role === 'Client') {
             query.client = safeUserId;
@@ -134,20 +131,20 @@ exports.getBookings = async (req, res, next) => {
 // Freelancer updates status (Confirm / Decline)
 exports.updateBookingStatus = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const safeBookingId = String(req.params.id);
         const { status } = req.body; 
-        const userId = req.user.id || req.user._id;
+        const userId = String(req.user.id || req.user._id);
 
         if (!['Confirmed', 'Declined'].includes(status)) {
             return res.status(400).json({ message: 'Invalid status value' });
         }
 
-        const booking = await Booking.findById(id);
+        const booking = await Booking.findById(safeBookingId);
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        if (req.user.role !== 'Admin' && booking.freelancer.toString() !== String(userId)) {
+        if (req.user.role !== 'Admin' && booking.freelancer.toString() !== userId) {
             return res.status(403).json({ message: 'You can only update your own bookings' });
         }
 
@@ -159,19 +156,18 @@ exports.updateBookingStatus = async (req, res, next) => {
 
         if (status === 'Confirmed') {
             await booking.save();
-            const existing = await Transaction.findOne({ booking: booking._id });
+            const existing = await Transaction.findOne({ booking: String(booking._id) });
             if (!existing) {
-                const gig = await Gig.findById(booking.gig);
+                const gig = await Gig.findById(String(booking.gig));
                 await Transaction.create({
-                    booking: booking._id,
-                    client: booking.client,
-                    freelancer: booking.freelancer,
-                    gig: booking.gig,
+                    booking: String(booking._id),
+                    client: String(booking.client),
+                    freelancer: String(booking.freelancer),
+                    gig: String(booking.gig),
                     amount: gig ? gig.price || 0 : 0,
-                    paymentReference: booking.paymentReference
+                    paymentReference: String(booking.paymentReference)
                 });
                 
-                // Log transaction creation
                 logger.info('Transaction logged to ledger', { bookingId: booking._id });
             }
         } else {
@@ -179,10 +175,9 @@ exports.updateBookingStatus = async (req, res, next) => {
                 booking.paymentStatus = 'Refunded';
             }
             await booking.save();
-            await Transaction.deleteOne({ booking: booking._id });
+            await Transaction.deleteOne({ booking: String(booking._id) });
         }
 
-        // Log status change
         logger.info(`Booking status updated to ${status}`, { bookingId: booking._id, freelancerId: userId });
 
         res.status(200).json({ message: `Booking status updated to ${status}`, booking });

@@ -4,10 +4,12 @@ const User = require('../models/userModel');
 
 // Registers a new user, returns 409 if the email is already taken
 exports.registerUser = async (userData) => {
-    const { name, email, password, role } = userData;
+    const rawEmail = typeof userData.email === 'string' ? userData.email : '';
+    const safeEmail = String(rawEmail).trim().toLowerCase();
+    const { name, password, role } = userData;
 
-    // Check for duplicate
-   const existingUser = await User.findOne({ email: String(email) });
+    // Check for duplicate with strictly typed string
+    const existingUser = await User.findOne({ email: safeEmail });
     if (existingUser) {
         throw new Error('User with this email already exists.');
     }
@@ -16,8 +18,8 @@ exports.registerUser = async (userData) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = new User({
-        name,
-       email: String(email),
+        name: String(name),
+        email: safeEmail,
         password: hashedPassword,
         role: role || 'Client'
     });
@@ -29,7 +31,8 @@ exports.registerUser = async (userData) => {
 
 // Logs a user in with Account Lockout protection (locks after 5 failed attempts)
 exports.loginUser = async (email, password) => {
-   const user = await User.findOne({ email: String(email) });
+    const safeEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const user = await User.findOne({ email: String(safeEmail) });
     if (!user) {
         throw new Error('Invalid email or password.');
     }
@@ -49,7 +52,7 @@ exports.loginUser = async (email, password) => {
         // Lock account for 15 minutes if attempts reach 5
         if (user.loginAttempts >= 5) {
             user.lockUntil = new Date(now + 15 * 60 * 1000);
-            user.loginAttempts = 0; // Reset counter for next cycle
+            user.loginAttempts = 0;
             await user.save();
             throw new Error('Account locked due to 5 failed login attempts. Please try again after 15 minutes.');
         }

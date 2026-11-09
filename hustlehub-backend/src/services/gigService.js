@@ -25,19 +25,18 @@ const pickFields = (data = {}) =>
     }, {});
 
 const assertValidId = (id) => {
-    if (!mongoose.isValidObjectId(id)) throw httpError(400, 'Invalid gig ID.');
+    if (!mongoose.isValidObjectId(String(id))) throw httpError(400, 'Invalid gig ID.');
 };
 
 exports.createGig = async (ownerId, data) => {
-    // owner always comes from the verified JWT, never from the request body
-    return Gig.create({ ...pickFields(data), owner: ownerId, status: 'published' });
+    return Gig.create({ ...pickFields(data), owner: String(ownerId), status: 'published' });
 };
 
-exports.getAllGigs = async ({ category } = {}) => {
-    // Return all gigs to ensure legacy and unstatused database entries appear correctly
+exports.getAllGigs = async (params = {}) => {
     const filter = {};
-    if (category && typeof category === 'string' && Gig.CATEGORIES.includes(String(category))) {
-        filter.category = String(category);
+    const categoryInput = params && params.category ? String(params.category) : null;
+    if (categoryInput && Gig.CATEGORIES.includes(categoryInput)) {
+        filter.category = categoryInput;
     }
     // only the owner's name is returned, never email or password hash
     return Gig.find(filter).populate('owner', 'name').sort({ createdAt: -1 });
@@ -65,8 +64,7 @@ exports.updateGig = async (id, user, data) => {
     const gig = await Gig.findById(String(id));
     if (!gig) throw httpError(404, 'Gig not found.');
 
-    // The freelancer who created the gig can edit it; Admin can edit any gig
-    const isOwner = gig.owner && gig.owner.toString() === user.id;
+    const isOwner = gig.owner && gig.owner.toString() === String(user.id);
     const isAdmin = user.role === 'Admin';
     if (!isOwner && !isAdmin) {
         throw httpError(403, 'You can only edit your own gigs.');
@@ -85,8 +83,7 @@ exports.unpublishGig = async (id, user) => {
     const gig = await Gig.findById(String(id));
     if (!gig) throw httpError(404, 'Gig not found.');
 
-    // Owner can toggle their own gig; Admin can toggle any gig
-    const isOwner = gig.owner && gig.owner.toString() === user.id;
+    const isOwner = gig.owner && gig.owner.toString() === String(user.id);
     const isAdmin = user.role === 'Admin';
     if (!isOwner && !isAdmin) {
         throw httpError(403, 'You can only unpublish your own gigs.');
