@@ -88,6 +88,16 @@ jobs:
             exit 1
           fi
 
+          # 4. End-to-End Testing
+      - name: Install Playwright Browsers
+        run: |
+          cd hustlehub-frontend
+          npx playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        run: |
+          cd hustlehub-frontend
+          npx playwright test
       - name: Teardown Docker Environment
         if: always()
         run: |
