@@ -1,4 +1,4 @@
-/*
+ /*
  * Title: winston
  * Author: winstonjs
  * Date: Jun 12, 2024
@@ -14,24 +14,26 @@ const logger = require('../utils/logger'); // Inject logger
 exports.createBooking = async (req, res, next) => {
     try {
         const { gigId } = req.body;
-        const clientId = req.user.id || req.user._id;
+        const safeGigId = String(gigId); //explicitly cast to string
+        const clientId = String(req.user.id || req.user._id);
 
-        const gig = await Gig.findById(gigId);
+        // Pass the sanitized variable to the database query
+        const gig = await Gig.findById(safeGigId);
         if (!gig) {
             return res.status(404).json({ message: 'Gig not found' });
         }
 
-        const freelancerId = gig.owner || gig.freelancer || gig.user;
-        if (!freelancerId) {
+        const freelancerId = String(gig.owner || gig.freelancer || gig.user);
+        if (!freelancerId || freelancerId === 'undefined') {
             return res.status(400).json({ message: 'This gig has no assigned freelancer/owner' });
         }
 
-        if (String(freelancerId) === String(clientId)) {
+        if (freelancerId === clientId) {
             return res.status(400).json({ message: 'You cannot book your own gig' });
         }
 
         const booking = await Booking.create({
-            gig: gigId,
+            gig: safeGigId,
             client: clientId,
             freelancer: freelancerId,
             status: 'Pending',

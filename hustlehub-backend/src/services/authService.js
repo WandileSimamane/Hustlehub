@@ -7,7 +7,7 @@ exports.registerUser = async (userData) => {
     const { name, email, password, role } = userData;
 
     // Check for duplicate
-    const existingUser = await User.findOne({ email });
+   const existingUser = await User.findOne({ email: String(email) });
     if (existingUser) {
         throw new Error('User with this email already exists.');
     }
@@ -17,7 +17,7 @@ exports.registerUser = async (userData) => {
 
     const newUser = new User({
         name,
-        email,
+       email: String(email),
         password: hashedPassword,
         role: role || 'Client'
     });
@@ -29,7 +29,7 @@ exports.registerUser = async (userData) => {
 
 // Logs a user in with Account Lockout protection (locks after 5 failed attempts)
 exports.loginUser = async (email, password) => {
-    const user = await User.findOne({ email });
+   const user = await User.findOne({ email: String(email) });
     if (!user) {
         throw new Error('Invalid email or password.');
     }

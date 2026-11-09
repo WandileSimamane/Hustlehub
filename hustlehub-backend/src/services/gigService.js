@@ -45,19 +45,24 @@ exports.getAllGigs = async ({ category } = {}) => {
 
 exports.getGigsByOwner = async (ownerId) => {
     // Freelancers still need to see ALL their gigs (published and unpublished) in their manager view
-    return Gig.find({ owner: ownerId }).sort({ createdAt: -1 });
+    
+    //Explicitly cast ownerId to string to block NoSQL objects
+    return Gig.find({ owner: String(ownerId) }).sort({ createdAt: -1 });
 };
 
 exports.getGigById = async (id) => {
     assertValidId(id);
-    const gig = await Gig.findById(id).populate('owner', 'name');
+    const gig = await Gig.findById(String(id)).populate('owner', 'name');
+    
     if (!gig) throw httpError(404, 'Gig not found.');
     return gig;
 };
 
 exports.updateGig = async (id, user, data) => {
     assertValidId(id);
-    const gig = await Gig.findById(id);
+
+    //Explicitly cast id to string
+    const gig = await Gig.findById(String(id));
     if (!gig) throw httpError(404, 'Gig not found.');
 
     // The freelancer who created the gig can edit it; Admin can edit any gig
@@ -76,7 +81,8 @@ exports.updateGig = async (id, user, data) => {
 // Renamed from deleteGig to unpublishGig for clarity
 exports.unpublishGig = async (id, user) => {
     assertValidId(id);
-    const gig = await Gig.findById(id);
+    //Explicitly cast id to string
+    const gig = await Gig.findById(String(id));
     if (!gig) throw httpError(404, 'Gig not found.');
 
     // Owner can toggle their own gig; Admin can toggle any gig
