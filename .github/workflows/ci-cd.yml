@@ -78,12 +78,12 @@ jobs:
         run: |
           docker ps
           # Check if backend container is running
-          if [ "$(docker inspect -f '{{.State.Running}}' hustlehub-backend)" != "true" ]; then
+          if [ "$(docker inspect -f '{{.State.Running}}' hustlehub_backend)" != "true" ]; then
             echo "Backend container failed to run!"
             exit 1
           fi
           # Check if frontend container is running
-          if [ "$(docker inspect -f '{{.State.Running}}' hustlehub-frontend)" != "true" ]; then
+          if [ "$(docker inspect -f '{{.State.Running}}' hustlehub_frontend)" != "true" ]; then
             echo "Frontend container failed to run!"
             exit 1
           fi
