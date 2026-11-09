@@ -13,8 +13,8 @@ USER node
 # Copy package dependency manifests
 COPY --chown=node:node package*.json ./
 
-# Install dependencies with locked lifecycle scripts
-RUN npm install --ignore-scripts
+# Install exact locked dependencies without running external scripts
+RUN npm ci --ignore-scripts --only=production
 
 # Copy application source explicitly
 COPY --chown=node:node src/ ./src/
