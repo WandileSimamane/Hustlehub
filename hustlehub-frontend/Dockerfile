@@ -17,7 +17,7 @@ COPY --chown=node:node package*.json ./
 RUN npm ci --ignore-scripts
 
 # Copy frontend source code and ALL Vite/Tailwind configs explicitly
-COPY --chown=node:node index.html vite.config.js tailwind.config.js postcss.config.js eslint.config.js ./
+COPY --chown=node:node index.html vite.config.js tailwind.config.js ./
 COPY --chown=node:node src/ ./src/
 COPY --chown=node:node public/ ./public/
 
