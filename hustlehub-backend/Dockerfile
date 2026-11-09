@@ -13,12 +13,13 @@ USER node
 # Copy package dependency manifests
 COPY --chown=node:node package*.json ./
 
-# Install exact locked dependencies without running external scripts
-RUN npm ci --ignore-scripts --only=production
+# Install exact locked dependencies (scripts allowed so bcrypt can build its binaries)
+RUN npm ci --omit=dev
 
-# Copy application source explicitly
+# Copy application source and environment explicitly
 COPY --chown=node:node src/ ./src/
 COPY --chown=node:node server.js ./
+COPY --chown=node:node .env ./
 
 # Expose backend port
 EXPOSE 5000
