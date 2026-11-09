@@ -1,6 +1,7 @@
 const Booking = require('../models/bookingModel');
 const Gig = require('../models/gigModel');
 const Transaction = require('../models/transactionModel.js');
+const logger = require('../utils/logger'); // Inject logger
 
 // Client creates a booking for a gig (no transaction yet: that happens on confirmation)
 exports.createBooking = async (req, res, next) => {
@@ -13,7 +14,6 @@ exports.createBooking = async (req, res, next) => {
             return res.status(404).json({ message: 'Gig not found' });
         }
 
-        // Support whatever field name your Gig model uses for the owner/freelancer
         const freelancerId = gig.owner || gig.freelancer || gig.user;
         if (!freelancerId) {
             return res.status(400).json({ message: 'This gig has no assigned freelancer/owner' });
@@ -31,11 +31,19 @@ exports.createBooking = async (req, res, next) => {
             paymentStatus: 'Unpaid'
         });
 
+        // Log the booking creation
+        logger.info('New booking created', { 
+            bookingId: booking._id, 
+            clientId: clientId, 
+            freelancerId: freelancerId 
+        });
+
         res.status(201).json({
             message: 'Booking created! Proceed to payment to secure your booking.',
             booking
         });
     } catch (error) {
+        logger.error('Error creating booking', { error: error.message });
         next(error);
     }
 };
@@ -73,11 +81,19 @@ exports.payForBooking = async (req, res, next) => {
         booking.paidAt = new Date();
         await booking.save();
 
+        // Log the payment
+        logger.info('Booking payment successful', { 
+            bookingId: booking._id, 
+            amount: booking.gig.price,
+            reference: booking.paymentReference 
+        });
+
         res.status(200).json({
             message: 'Payment successful! Funds are held in escrow until the freelancer confirms.',
             booking
         });
     } catch (error) {
+        logger.error('Error processing payment', { error: error.message });
         next(error);
     }
 };
@@ -93,7 +109,6 @@ exports.getBookings = async (req, res, next) => {
         } else if (req.user.role === 'Freelancer') {
             query.freelancer = userId;
         }
-        // If role is 'Admin', query remains empty ({}), fetching ALL bookings in the system
 
         const bookings = await Booking.find(query)
             .populate('gig')
@@ -111,7 +126,7 @@ exports.getBookings = async (req, res, next) => {
 exports.updateBookingStatus = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { status } = req.body; // 'Confirmed' or 'Declined'
+        const { status } = req.body; 
         const userId = req.user.id || req.user._id;
 
         if (!['Confirmed', 'Declined'].includes(status)) {
@@ -123,7 +138,6 @@ exports.updateBookingStatus = async (req, res, next) => {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        // Only the freelancer who owns this booking (or an Admin) may change it
         if (req.user.role !== 'Admin' && booking.freelancer.toString() !== String(userId)) {
             return res.status(403).json({ message: 'You can only update your own bookings' });
         }
@@ -136,7 +150,6 @@ exports.updateBookingStatus = async (req, res, next) => {
 
         if (status === 'Confirmed') {
             await booking.save();
-            // Create the transaction once per booking (guards against double clicks)
             const existing = await Transaction.findOne({ booking: booking._id });
             if (!existing) {
                 const gig = await Gig.findById(booking.gig);
@@ -148,18 +161,24 @@ exports.updateBookingStatus = async (req, res, next) => {
                     amount: gig ? gig.price || 0 : 0,
                     paymentReference: booking.paymentReference
                 });
+                
+                // Log transaction creation
+                logger.info('Transaction logged to ledger', { bookingId: booking._id });
             }
         } else {
             if (booking.paymentStatus === 'Paid') {
                 booking.paymentStatus = 'Refunded';
             }
             await booking.save();
-            // Declined: make sure no income is recorded for this booking
             await Transaction.deleteOne({ booking: booking._id });
         }
 
+        // Log status change
+        logger.info(`Booking status updated to ${status}`, { bookingId: booking._id, freelancerId: userId });
+
         res.status(200).json({ message: `Booking status updated to ${status}`, booking });
     } catch (error) {
+        logger.error('Error updating booking status', { error: error.message });
         next(error);
     }
 };

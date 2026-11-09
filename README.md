@@ -175,3 +175,31 @@ A `Transaction` is only created after the freelancer confirms a booking, so ever
 ### How tax is calculated
 
 The estimate uses the South African SARS individual income tax rates for the **2026/27 tax year**
+
+## Security Implementation & Review
+
+### 1. Own Security Features
+
+HustleHub+ incorporates custom backend security measures beyond standard authentication flows to ensure high resilience and data integrity:
+
+#### A. Database-Backed Account Lockout
+* **Implementation Location:** Backend (`src/services/authService.js` & `models/userModel.js`)
+* **Mechanism:** Tracks consecutive failed login attempts on the User schema. If a user enters an incorrect password 5 consecutive times, the account status updates automatically, setting a lockout timer (`lockUntil`) for 15 minutes.
+* **Purpose:** Prevents automated credential stuffing and brute-force dictionary attacks against user accounts.
+
+#### B. Global NoSQL Payload Sanitization
+* **Implementation Location:** Backend (`server.js` using `express-mongo-sanitize`)
+* **Mechanism:** Intercepts all incoming client requests (params, body, and query strings) and strips out reserved MongoDB query operators (such as `$` and `.`).
+* **Purpose:** Neutralizes NoSQL Injection vulnerabilities by ensuring raw malicious objects cannot alter application query logic.
+
+---
+
+### 2. Final Security Review & Threat Mitigation Matrix
+
+| Security Threat | Severity | Impacted Component | Implemented Protection & Controls |
+| :--- | :--- | :--- | :--- |
+| **NoSQL Injection** | High | Database / Backend APIs | **Global Payload Sanitization:** Installed `express-mongo-sanitize` middleware in `server.js` to strip malicious query selectors (`$gt`, `$ne`, etc.) from all incoming payloads prior to query execution. |
+| **Brute-Force & Credential Stuffing** | High | Authentication Flow | **Database-Backed Account Lockout:** Tracks failed login counter (`loginAttempts`) directly on the User model. Enforces a mandatory 15-minute lockout after 5 consecutive failures. |
+| **Cross-Site Scripting (XSS)** | Medium | Frontend / Client Application | **Input/Output Escaping & Content Sanitization:** Ensures user-submitted string fields (e.g., gig descriptions, user profile names) are safe to render without risk of script execution. |
+| **Sensitive Credential Exposure** | Critical | Repository & Server Environment | **Strict Environment Isolation:** Enforces strict `.env` file isolation for `MONGODB_URI` and `JWT_SECRET`. Excluded sensitive configuration files from version control via `.gitignore`. |
+| **Broken Access Control (BAC)** | High | Protected API Endpoints | **Role & Ownership Verification:** Enforces JWT verification combined with backend ownership checks (`gig.owner.toString() === user.id` or `user.role === 'Admin'`) before permitting edit or delete operations. |
