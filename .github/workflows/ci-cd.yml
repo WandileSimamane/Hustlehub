@@ -9,13 +9,11 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     services:
       mongodb:
         image: mongo:latest
         ports:
           - 27017:27017
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -29,7 +27,7 @@ jobs:
       - name: Install Backend Dependencies
         run: |
           cd hustlehub-backend
-          npm ci
+          npm install
 
       - name: Lint Backend
         run: |
@@ -49,7 +47,7 @@ jobs:
       - name: Install Frontend Dependencies
         run: |
           cd hustlehub-frontend
-          npm ci
+          npm install
 
       - name: Lint Frontend
         run: |
