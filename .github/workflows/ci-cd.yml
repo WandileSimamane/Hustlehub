@@ -88,7 +88,7 @@ jobs:
             exit 1
           fi
 
-          # 4. End-to-End Testing
+      # 4. End-to-End Testing
       - name: Install Playwright Browsers
         run: |
           cd hustlehub-frontend
@@ -98,7 +98,29 @@ jobs:
         run: |
           cd hustlehub-frontend
           npx playwright test
+
       - name: Teardown Docker Environment
         if: always()
         run: |
           docker compose down || true
+
+  sonarqube:
+    name: SonarQube SAST Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required by SonarQube to analyze Git history
+
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Run SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v4.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
