@@ -111,12 +111,12 @@ exports.payForBooking = async (req, res, next) => {
 exports.getBookings = async (req, res, next) => {
     try {
         let query = {};
-        const userId = req.user.id || req.user._id;
+       const safeUserId = String(req.user.id || req.user._id);
 
         if (req.user.role === 'Client') {
-            query.client = userId;
+            query.client = safeUserId;
         } else if (req.user.role === 'Freelancer') {
-            query.freelancer = userId;
+            query.freelancer = safeUserId;
         }
 
         const bookings = await Booking.find(query)

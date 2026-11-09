@@ -36,8 +36,8 @@ exports.createGig = async (ownerId, data) => {
 exports.getAllGigs = async ({ category } = {}) => {
     // Return all gigs to ensure legacy and unstatused database entries appear correctly
     const filter = {};
-    if (typeof category === 'string' && Gig.CATEGORIES.includes(category)) {
-        filter.category = category;
+    if (category && typeof category === 'string' && Gig.CATEGORIES.includes(String(category))) {
+        filter.category = String(category);
     }
     // only the owner's name is returned, never email or password hash
     return Gig.find(filter).populate('owner', 'name').sort({ createdAt: -1 });
