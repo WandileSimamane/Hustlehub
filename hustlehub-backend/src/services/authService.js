@@ -70,8 +70,12 @@ exports.loginUser = async (email, password) => {
         role: user.role
     };
 
-    // Bulletproof fallback secret
-    const secret = process.env.JWT_SECRET || 'c4635fd54ffe87052eb60caac7f3a36aec27caf42b9c79126a081a3e05b56586b3dc88c8fd38db8ae67e456d76fcd28fc7ca5a1d3d6662050f7358c5f15fa405';
+    // Retrieve JWT_SECRET strictly from environment variables
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('JWT_SECRET is not defined in environment variables.');
+    }
+
     const token = jwt.sign(payload, secret, { expiresIn: '1h' });
 
     return { 
